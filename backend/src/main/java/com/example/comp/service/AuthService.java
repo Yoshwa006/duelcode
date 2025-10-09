@@ -61,4 +61,8 @@ public class AuthService {
 
         return response;
     }
+
+    public boolean validateUser(String token){
+        boolean res = jwtService.isTokenExpired(token);
+    }
 }

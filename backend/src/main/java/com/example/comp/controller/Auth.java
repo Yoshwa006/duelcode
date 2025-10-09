@@ -36,4 +36,14 @@ public class Auth {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // @PostMapping("/api/auth/validte")
+    // public ResponseEntity<?> validateUser(@RequestBody String token){
+    //     try{
+    //         boolean res = authService.validateUser(token);
+    //         if(res){
+    //             return Responce
+    //         }
+    //     }
+    // }
 }
