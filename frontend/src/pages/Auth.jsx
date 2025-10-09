@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { login, register } from "../service/api";
 
 export default function AuthPage() {
@@ -34,6 +34,8 @@ export default function AuthPage() {
       setLoading(false);
     }
   };
+
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
@@ -48,7 +50,7 @@ export default function AuthPage() {
             </label>
             <input
               type="email"
-              placeholder="you@example.com"
+              placeholder="enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-800 bg-white"

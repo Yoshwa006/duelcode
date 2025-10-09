@@ -62,7 +62,26 @@ export async function enterToken({ token }) {
     }
 }
 
+export async function validateUser({token}){
+    const body ={
+        token
+    }
 
+    try{
+        const response = await axios.post(`https://localhost:8080/api/auth/validate`, body);
+        const res = response.data;
+
+        if(res == false) {
+            return false;
+        }
+
+        return true;
+    }
+        catch(error){
+            console.log("Some error has happend in validating the user !", token)
+            throw error;
+        }
+    }
 
 
 export async function register({ email, password }) {

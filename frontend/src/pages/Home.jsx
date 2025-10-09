@@ -44,9 +44,9 @@ function Home() {
     if (jwt) localStorage.setItem("jwt", jwt);
   };
 
-  const handleTokenSubmit = async () => {
+  const handleSubmitKey = async () => {
     if (!token.trim()) {
-      setError("Please enter a token");
+      setError("Please enter the key !");
       return;
     }
 
@@ -56,10 +56,10 @@ function Home() {
       if (res !== -1) {
         navigate(`/${res}`);
       } else {
-        setError("Invalid token or session full.");
+        setError("Invalid key or session already full.");
       }
     } catch {
-      setError("Error submitting token.");
+      setError("Error submitting key.");
     }
   };
 
@@ -170,7 +170,7 @@ function Home() {
                 className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
-                onClick={handleTokenSubmit}
+                onClick={handleSubmitKey}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
               >
                 Submit Token
