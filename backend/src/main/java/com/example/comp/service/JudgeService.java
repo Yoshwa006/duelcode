@@ -6,6 +6,7 @@ import com.example.comp.model.Users;
 import com.example.comp.repo.QuestionRepo;
 import com.example.comp.repo.SessionRepo;
 import com.example.comp.repo.UserRepo;
+import com.example.comp.util.CurrentUser;
 import com.example.comp.util.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
 import java.security.SecureRandom;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -23,11 +25,10 @@ public class JudgeService {
 
     @Autowired private SessionRepo sessionRepo;
     @Autowired private UserRepo userRepo;
-    @Autowired private JwtService jwtService;
     @Autowired private QuestionRepo questionRepo;
+    @Autowired private CurrentUser currentUser;
 
-    public String generateKey(UUID quesId) {
-
+    private String newToken() {
         final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         SecureRandom random = new SecureRandom();
 
@@ -38,101 +39,42 @@ public class JudgeService {
                     .collect(Collectors.joining());
         } while (sessionRepo.existsByToken(token));
 
+        return token;
+    }
+
+    public String generateKey(UUID quesId) {
         Question question = questionRepo.findById(quesId)
                 .orElseThrow(() -> new RuntimeException("Invalid question id: " + quesId));
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            return "";
-        }
-        Object principal = auth.getPrincipal();
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else if (principal instanceof String) {
-            username = (String) principal;
-        } else {
-            return "";
-        }
-        Users user = userRepo.findByEmail(username);
-        if(user == null){
-            throw new RuntimeException("User not present !");
-        }
+        Users user = currentUser.get();
+        if (user == null) throw new RuntimeException("User not authenticated");
 
-        Session session = new Session(token, user, question);
-        sessionRepo.save(session);
+        String token = newToken();
+        sessionRepo.save(new Session(token, user, question));
 
         log.info("Generated Token: {}", token);
         return token;
     }
 
-    public boolean joinRandom(){
+    private boolean joinSession(Session session) {
+        if (session == null || session.getJoinedBy() != null) return false;
 
-        Session session = sessionRepo.findTopByJoinedByIsNullOrderByCreatedAtDesc();
-        if(session == null){
-            return false;
-        }
-        if(session.getJoinedBy() != null){
-            System.out.println("Someone already joined !");
-            return false;
-        }
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            return false;
-        }
-        Object principal = auth.getPrincipal();
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else if (principal instanceof String) {
-            username = (String) principal;
-        } else {
-            return false;
-        }
-        Users user = userRepo.findByEmail(username);
-        if(user == null){
-            throw new RuntimeException("User not present !");
-        }
-        log.info("User joining session: {}, session token: {}", username);
+        Users user = currentUser.get();
+        if (user == null) return false;
+
         session.setJoinedBy(user);
         session.setStatus(Status.STATUS_PLAYING);
         sessionRepo.save(session);
         return true;
     }
 
-    public boolean enterToken(String token){
+    public boolean joinRandom() {
+        return joinSession(sessionRepo.findTopByJoinedByIsNullOrderByCreatedAtDesc());
+    }
 
+    public boolean enterToken(String token) {
         Session session = sessionRepo.findByToken(token);
-        if(session == null){
-            throw new RuntimeException("Session not found !");
-        }
-        if(session.getJoinedBy() != null){
-            System.out.println("Someone already joined !");
-            return false;
-        }
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            return false;
-        }
-        Object principal = auth.getPrincipal();
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else if (principal instanceof String) {
-            username = (String) principal; // sometimes it's the username string
-        } else {
-            return false;
-        }
-
-
-        Users user = userRepo.findByEmail(username);
-        if(user == null){
-            throw new RuntimeException("User not found !");
-        }
-        session.setJoinedBy(user);
-        session.setStatus(Status.STATUS_PLAYING);
-        sessionRepo.save(session);
-        return true;
+        if (session == null) throw new RuntimeException("Session not found");
+        return joinSession(session);
     }
-
 }

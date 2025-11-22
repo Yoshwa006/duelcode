@@ -8,6 +8,7 @@ import com.example.comp.model.Session;
 import com.example.comp.model.Users;
 import com.example.comp.repo.SessionRepo;
 import com.example.comp.repo.UserRepo;
+import com.example.comp.util.CurrentUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,64 +16,32 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.List;
-
 @Slf4j
 @Service
 public class SubmitService {
 
-    private final JwtService jwtService;
     private final WebClient client;
     private final SessionRepo sessionRepo;
     private final UserRepo userRepo;
+    private final CurrentUser currentUser;
 
-    public SubmitService(SessionRepo sessionRepo, JwtService jwtService, UserRepo userRepo) {
+    public SubmitService(SessionRepo sessionRepo, UserRepo userRepo, CurrentUser currentUser) {
         this.client = WebClient.builder()
                 .baseUrl("http://localhost:3001")
                 .build();
         this.sessionRepo = sessionRepo;
         this.userRepo = userRepo;
-        this.jwtService = jwtService;
+        this.currentUser = currentUser;
     }
 
     public boolean submitCode(SubmitRequest request) {
-        String token = request.getToken();
+        Session session = sessionRepo.findByToken(request.getToken());
+        if (session == null) return false;
+        if (session.getWho_won() != null) return false;
 
-        Session session = sessionRepo.findByToken(token);
-        if (session == null) {
-            logAllSessions(); // Log current DB state
-            log.error("Session not found for token: {}", token);
-            return false;
-        }
-
-        if (session.getWho_won().getId() != 0) {
-            log.warn("Code already submitted for session by user id: {}", session.getWho_won());
-            return false;
-        }
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            return false;
-        }
-        Object principal = auth.getPrincipal();
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else if (principal instanceof String) {
-            username = (String) principal;
-        } else {
-            return false;
-        }
-        Users user = userRepo.findByEmail(username);
-        if(user == null){
-            throw new RuntimeException("User not present !");
-        }
-
-        int userId = user.getId();
-        if (!isUserInSession(userId, session)) {
-            log.error("User {} not part of session {}", userId, token);
-            return false;
-        }
+        Users user = currentUser.get();
+        if (user == null) return false;
+        if (!isUserInSession(user.getId(), session)) return false;
 
         SubmitAPI submission = Mapper.SubmitRequestToAPI(request);
         JudgeResponse result = runJudge(submission);
@@ -81,16 +50,15 @@ public class SubmitService {
         if ("Accepted".equalsIgnoreCase(result.getStatus())) {
             session.setWho_won(user);
             sessionRepo.save(session);
-            log.info("Accepted: {}", result.getStdout());
             return true;
         }
 
-        log.info("Not accepted. Status: {}", result.getStatus());
         return false;
     }
-
+    
     private boolean isUserInSession(int userId, Session session) {
-        return userId == session.getCreatedBy() .getId()|| userId == session.getJoinedBy().getId();
+        return (session.getCreatedBy() != null && session.getCreatedBy().getId() == userId)
+                || (session.getJoinedBy() != null && session.getJoinedBy().getId() == userId);
     }
 
     private JudgeResponse runJudge(SubmitAPI submission) {
@@ -106,11 +74,4 @@ public class SubmitService {
             return null;
         }
     }
-
-    private void logAllSessions() {
-        List<Session> sessions = sessionRepo.findAll();
-        log.error("Current sessions in DB: {}", sessions);
-    }
-
 }
-
