@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class QuestionService {
@@ -18,7 +19,7 @@ public class QuestionService {
         return questionRepo.findAll();
     }
 
-    public Question getQuestionById(Long id) {
+    public Question getQuestionById(UUID id) {
         return questionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Question not found with id: " + id));
     }
@@ -27,7 +28,7 @@ public class QuestionService {
         return questionRepo.save(question);
     }
 
-    public Question updateQuestion(Long id, Question questionDetails) {
+    public Question updateQuestion(UUID id, Question questionDetails) {
         Question question = getQuestionById(id);
         question.setTitle(questionDetails.getTitle());
         question.setDifficulty(questionDetails.getDifficulty());

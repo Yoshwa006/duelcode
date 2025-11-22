@@ -33,5 +33,12 @@ public class MainController {
         }
         return ResponseEntity.ok(true);
     }
+
+    @PostMapping("/join-random")
+    public ResponseEntity<Boolean> joinRandom(@RequestParam("key") String key) {
+        boolean result = judgeService.joinRandom(key);
+        return ResponseEntity.ok(result);
+    }
+
     
 }

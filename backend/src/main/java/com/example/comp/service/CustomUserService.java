@@ -13,20 +13,19 @@ public class CustomUserService implements UserDetailsService {
 
     private final UserRepo repo;
 
-
     @Autowired
     public CustomUserService(UserRepo repo){
         this.repo = repo;
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Users users = repo.findByEmail(email);
 
         if (users == null) {
             throw new UsernameNotFoundException("User not found with email: " + email);
         }
 
-        return (UserDetails) users;
+        return users;
     }
 }

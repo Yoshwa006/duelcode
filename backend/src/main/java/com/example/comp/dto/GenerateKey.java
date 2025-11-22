@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -12,7 +14,7 @@ import lombok.Setter;
 
 public class GenerateKey {
     private String jwt;
-    private int questionId;
+    private UUID questionId;
 
 }
 

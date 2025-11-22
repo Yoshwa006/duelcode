@@ -1,13 +1,17 @@
 package com.example.comp.model;
 
 
+import com.example.comp.util.EnumData;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Optional;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.UUID;
 
 @Entity
 @AllArgsConstructor
@@ -20,12 +24,14 @@ public class Session {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @OneToOne
     @JoinColumn(name = "created_by")
     private Users createdBy;
+
+    private Instant createdAt;
 
     @Column(nullable = false, unique = true)
     private String token;
@@ -42,13 +48,15 @@ public class Session {
     @JoinColumn(name = "question_id")
     private Question question;
 
-    private boolean active;
+    @Enumerated(EnumType.STRING)
+    private String status;
 
     public Session(String token, Users createdBy, Question question) {
         this.token = token;
         this.createdBy = createdBy;
         this.question = question;
-        this.active = true; // active when created
+        this.createdAt=Instant.now();
+        this.status = EnumData.STATUS_ACTIVE.toString();
     }
 
 }

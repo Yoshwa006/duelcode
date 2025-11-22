@@ -43,7 +43,7 @@ public class SubmitService {
             return false;
         }
 
-        if (session.getWho_won() != 0) {
+        if (session.getWho_won().getId() != 0) {
             log.warn("Code already submitted for session by user id: {}", session.getWho_won());
             return false;
         }
@@ -66,7 +66,7 @@ public class SubmitService {
         if (result == null) return false;
 
         if ("Accepted".equalsIgnoreCase(result.getStatus())) {
-            session.setWho_won(userId);
+            session.setWho_won(user);
             sessionRepo.save(session);
             log.info("Accepted: {}", result.getStdout());
             return true;
@@ -77,7 +77,7 @@ public class SubmitService {
     }
 
     private boolean isUserInSession(int userId, Session session) {
-        return userId == session.getCreatedBy() || userId == session.getJoinedBy();
+        return userId == session.getCreatedBy() .getId()|| userId == session.getJoinedBy().getId();
     }
 
     private JudgeResponse runJudge(SubmitAPI submission) {
