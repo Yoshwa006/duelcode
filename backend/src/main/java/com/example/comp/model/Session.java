@@ -1,7 +1,7 @@
 package com.example.comp.model;
 
 
-import com.example.comp.util.EnumData;
+import com.example.comp.util.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.UUID;
 
 @Entity
@@ -49,14 +47,15 @@ public class Session {
     private Question question;
 
     @Enumerated(EnumType.STRING)
-    private String status;
+    @Column(name = "status")
+    private Status status;
 
     public Session(String token, Users createdBy, Question question) {
         this.token = token;
         this.createdBy = createdBy;
         this.question = question;
         this.createdAt=Instant.now();
-        this.status = EnumData.STATUS_ACTIVE.toString();
+        this.status = Status.STATUS_ACTIVE;
     }
 
 }

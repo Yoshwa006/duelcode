@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api")
 public class MainController {
@@ -20,9 +22,8 @@ public class MainController {
 
 
     @PostMapping("/generate")
-    public ResponseEntity<String> generate(@RequestBody GenerateKey generateKey) {
-        System.out.println("JWt: " + generateKey.getJwt());
-        return ResponseEntity.ok().body(judgeService.generateKey(generateKey.getJwt(), generateKey.getQuestionId()));
+    public ResponseEntity<String> generate(@RequestBody UUID questionId) {
+        return ResponseEntity.ok().body(judgeService.generateKey(questionId));
     }
 
     @PostMapping("/submit")
@@ -35,9 +36,14 @@ public class MainController {
     }
 
     @PostMapping("/join-random")
-    public ResponseEntity<Boolean> joinRandom(@RequestParam("key") String key) {
-        boolean result = judgeService.joinRandom(key);
+    public ResponseEntity<Boolean> joinRandom() {
+        boolean result = judgeService.joinRandom();
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("join-key")
+    public boolean joinWithKey(@RequestParam String key){
+        return judgeService.enterToken(key);
     }
 
     

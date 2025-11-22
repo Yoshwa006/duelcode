@@ -9,6 +9,9 @@ import com.example.comp.model.Users;
 import com.example.comp.repo.SessionRepo;
 import com.example.comp.repo.UserRepo;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -34,7 +37,6 @@ public class SubmitService {
 
     public boolean submitCode(SubmitRequest request) {
         String token = request.getToken();
-        String jwt = request.getJwtToken();
 
         Session session = sessionRepo.findByToken(token);
         if (session == null) {
@@ -48,11 +50,22 @@ public class SubmitService {
             return false;
         }
 
-        String email = jwtService.extractUsername(jwt);
-        Users user = userRepo.findByEmail(email);
-        if (user == null) {
-            log.error("User not found for email: {}", email);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
             return false;
+        }
+        Object principal = auth.getPrincipal();
+        String username;
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails) principal).getUsername();
+        } else if (principal instanceof String) {
+            username = (String) principal;
+        } else {
+            return false;
+        }
+        Users user = userRepo.findByEmail(username);
+        if(user == null){
+            throw new RuntimeException("User not present !");
         }
 
         int userId = user.getId();
