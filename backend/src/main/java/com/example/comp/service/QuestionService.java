@@ -1,5 +1,6 @@
 package com.example.comp.service;
 
+import com.example.comp.dto.QuestionDTO;
 import com.example.comp.model.Question;
 import com.example.comp.repo.QuestionRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +18,26 @@ public class QuestionService {
     @Autowired
     RedisTemplate<String, Object> redis;
 
-    public List<Question> getAllQuestions() {
-        return questionRepo.findAll();
+    public List<QuestionDTO> getAllQuestions() {
+            return questionRepo.findAll()
+                    .stream()
+                    .map(this::toQuestionDTO)
+                    .toList();
+        }
+
+    public QuestionDTO toQuestionDTO(Question question) {
+        if (question == null) {
+            return null;
+        }
+
+        QuestionDTO dto = new QuestionDTO();
+        dto.setId(question.getId());
+        dto.setTitle(question.getTitle());
+        dto.setDescription(question.getDescription());
+        dto.setDifficulty(question.getDifficulty());
+        dto.setStdIn(question.getStdIn());
+        dto.setExpectedOutput(question.getExpectedOutput());
+        return dto;
     }
 
     public Question getQuestionById(UUID id) {

@@ -25,7 +25,4 @@ public interface SessionRepo extends JpaRepository<Session, UUID> {
 
     Session findTopByJoinedByIsNullOrderByCreatedAtDesc();
 
-
-
-
 }
