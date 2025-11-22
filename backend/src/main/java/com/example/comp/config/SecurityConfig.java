@@ -21,15 +21,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableMethodSecurity
 public class SecurityConfig implements WebMvcConfigurer {
 
-    private final CustomUserService customUserService;
-    private final BCryptPasswordConfig passwordEncoder;
-
-
     @Autowired
-    public SecurityConfig(BCryptPasswordConfig bCryptPasswordConfig, CustomUserService customUserService) {
-        this.customUserService = customUserService;
-        this.passwordEncoder = bCryptPasswordConfig;
-    }
+    private CustomUserService customUserService;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -53,11 +46,16 @@ public class SecurityConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider() {
+    public AuthenticationProvider authenticationProvider(BCryptPasswordEncoder encoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(customUserService);
-        provider.setPasswordEncoder(passwordEncoder.passwordEncoder());
+        provider.setPasswordEncoder(encoder);
         return provider;
+    }
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
 }

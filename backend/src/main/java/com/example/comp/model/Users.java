@@ -1,5 +1,7 @@
 package com.example.comp.model;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,6 +12,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
+@Setter
+@Getter
+
 public class Users implements UserDetails {
 
     @Id
@@ -19,7 +24,7 @@ public class Users implements UserDetails {
     private String email;
     private String password;
 
-    private String role = "ROLE_USER"; // add a role field for security
+    private String role = "ROLE_USER";
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }

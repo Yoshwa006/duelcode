@@ -2,75 +2,53 @@ package com.example.comp.model;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.Optional;
 
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+
 @Table(name = "session")
 public class Session {
 
 
     @Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-    private int createdBy;
+
+    @OneToOne
+    @JoinColumn(name = "created_by")
+    private Users createdBy;
+
     @Column(nullable = false, unique = true)
     private String token;
-    private int joinedBy;
-    private int who_won;
-    private int question_id;
 
-    public Session(String token, int createdBy, int questionId) {
+    @OneToOne
+    @JoinColumn(name = "joined_by")
+    private Users joinedBy;
+
+    @OneToOne
+    @JoinColumn(name = "who_won")
+    private Users who_won;
+
+    @OneToOne
+    @JoinColumn(name = "question_id")
+    private Question question;
+
+    private boolean active;
+
+    public Session(String token, Users createdBy, Question question) {
         this.token = token;
         this.createdBy = createdBy;
-        this.question_id = questionId;
+        this.question = question;
+        this.active = true; // active when created
     }
-
-    public int getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(int createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public int getJoinedBy() {
-        return joinedBy;
-    }
-
-    public void setJoinedBy(int joinedBy) {
-        this.joinedBy = joinedBy;
-    }
-
-    public int getWho_won() {
-        return who_won;
-    }
-
-    public void setWho_won(int who_won) {
-        this.who_won = who_won;
-    }
-
-    public int getQuestion_id() {
-        return question_id;
-    }
-
-    public void setQuestion_id(int question_id) {
-        this.question_id = question_id;
-    }
-
 
 }

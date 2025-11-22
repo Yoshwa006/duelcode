@@ -1,20 +1,20 @@
 package com.example.comp.controller;
 
-
 import com.example.comp.dto.auth.AuthRequest;
+import com.example.comp.dto.auth.AuthResponse;
 import com.example.comp.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
-public class Auth {
+@RequestMapping("/api/auth")
+public class AuthController {
 
     private final AuthService authService;
 
     @Autowired
-    public Auth(AuthService authService) {
+    public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
@@ -23,27 +23,21 @@ public class Auth {
         try {
             authService.register(authRequest);
             return ResponseEntity.ok("User registered successfully");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
-        try {
-            return ResponseEntity.ok(authService.login(authRequest));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // @PostMapping("/api/auth/validte")
-    // public ResponseEntity<?> validateUser(@RequestBody String token){
-    //     try{
-    //         boolean res = authService.validateUser(token);
-    //         if(res){
-    //             return Responce
-    //         }
-    //     }
-    // }
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody AuthRequest authRequest) {
+        AuthResponse response = authService.login(authRequest);
+
+        if (!response.getValid()) {
+            return ResponseEntity.status(401).body("Invalid email or password");
+        }
+
+        return ResponseEntity.ok(response.getToken());
+    }
+
+
 }

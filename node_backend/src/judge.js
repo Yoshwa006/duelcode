@@ -10,12 +10,12 @@ app.use(express.json());
 const headers = {
   'Content-Type': 'application/json',
   'x-rapidapi-host': 'judge0-ce.p.rapidapi.com',
-  'x-rapidapi-key': process.env.JUDGE_API_KEY //
+  'x-rapidapi-key': "93f1e2c382mshae6d1f9ec604c67p14e8c3jsn7a4ef97c4287"
 };
 
 app.post('/run-code', async (req, res) => {
 
-  const {  //model for getting data from user
+  const {
       source_code,
       stdin,
       expected_output,
@@ -24,7 +24,7 @@ app.post('/run-code', async (req, res) => {
 
   try {
     const response = await axios.post(   // compiling code using judge0
-        `${process.env.JUDGE0_URL}?base64_encoded=false&wait=true&fields=stdout,stderr,compile_output,status`,
+        `https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true&fields=stdout,stderr,compile_output,status`,
         {
           source_code,
           stdin,
@@ -55,5 +55,5 @@ app.post('/run-code', async (req, res) => {
 
 app.listen(3001, () => {
   console.log('Judge0 microservice running on port 3001');
-  console.log("Api key is", process.env.JUDGE_API_KEY && process.env.JUDGE0_URL ? "is there" : "is not there")
+  // console.log("Api key is", process.env.JUDGE_API_KEY && process.env.JUDGE0_URL ? "is there" : "is not there")
 });

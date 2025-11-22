@@ -1,6 +1,5 @@
 package com.example.comp.service;
 
-
 import com.example.comp.dto.auth.AuthRequest;
 import com.example.comp.dto.auth.AuthResponse;
 import com.example.comp.dto.Mapper;
@@ -12,19 +11,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
 
-    final UserRepo repo;
-    final JwtService jwtService;
+    private final UserRepo repo;
+    private final JwtService jwtService;
 
     @Autowired
     public AuthService(UserRepo repo, JwtService jwtService) {
-        this.jwtService = jwtService;
         this.repo = repo;
+        this.jwtService = jwtService;
     }
 
     public boolean isEmailExists(String email) {
         return repo.findByEmail(email) != null;
     }
-
 
     public void register(AuthRequest authDTO) {
         if (isEmailExists(authDTO.getEmail())) {
@@ -34,27 +32,23 @@ public class AuthService {
         repo.save(savingUser);
     }
 
-
-
     public AuthResponse login(AuthRequest request) {
-
-        AuthResponse response = new AuthResponse();
         Users user = repo.findByEmail(request.getEmail());
+        AuthResponse response = new AuthResponse();
+
         if (user == null) {
-            return response;
+            response.setValid(false);
+            response.setToken(null);
+            return response; // email not found
         }
-        if (!isEmailExists(request.getEmail())) {
-            throw new RuntimeException("kjnj");
-        }
-
-
 
         if (!user.getPassword().equals(request.getPassword())) {
             response.setValid(false);
             response.setToken(null);
-            return response;
+            return response; // wrong password
         }
 
+        // success
         String token = jwtService.generateToken(user.getEmail());
         response.setValid(true);
         response.setToken(token);
@@ -62,7 +56,4 @@ public class AuthService {
         return response;
     }
 
-    public boolean validateUser(String token){
-        boolean res = jwtService.isTokenExpired(token);
-    }
 }
