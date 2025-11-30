@@ -1,14 +1,18 @@
 package com.example.comp.controller;
 
 import com.example.comp.dto.OperationStatusResponse;
+import com.example.comp.dto.SessionResponseDTO;
+import com.example.comp.dto.SessionSearchRequestDTO;
 import com.example.comp.dto.SubmitRequest;
 import com.example.comp.service.JudgeService;
+import com.example.comp.service.SessionService;
 import com.example.comp.service.SubmitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -17,6 +21,7 @@ public class MainController {
 
     @Autowired private JudgeService judgeService;
     @Autowired private SubmitService submitService;
+    @Autowired private SessionService sessionService;
 
     @PostMapping("/generate")
     public String generate(@RequestBody UUID questionId) {
@@ -50,5 +55,10 @@ public class MainController {
             case 404 -> HttpStatus.NOT_FOUND;
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
+    }
+
+    @PostMapping("/search")
+    public List<SessionResponseDTO> searchSessions(@RequestBody SessionSearchRequestDTO requestDTO){
+        return sessionService.searchSessions(requestDTO);
     }
 }
