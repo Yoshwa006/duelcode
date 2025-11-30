@@ -1,5 +1,6 @@
 package com.example.comp.service;
 
+import com.example.comp.dto.OperationStatusResponse;
 import com.example.comp.model.Question;
 import com.example.comp.model.Session;
 import com.example.comp.model.Users;
@@ -10,9 +11,6 @@ import com.example.comp.util.CurrentUser;
 import com.example.comp.util.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -72,9 +70,30 @@ public class JudgeService {
         return joinSession(sessionRepo.findTopByJoinedByIsNullOrderByCreatedAtDesc());
     }
 
-    public boolean enterToken(String token) {
+    public OperationStatusResponse enterToken(String token) {
+        OperationStatusResponse res = new OperationStatusResponse();
+
         Session session = sessionRepo.findByToken(token);
-        if (session == null) throw new RuntimeException("Session not found");
-        return joinSession(session);
+        if (session == null) {
+            res.setStatus("FAILED");
+            res.setMessage("Session not found");
+            res.setErrorCode(404);
+            return res;
+        }
+
+        boolean joined = joinSession(session);
+
+        if (!joined) {
+            res.setStatus("FAILED");
+            res.setMessage("Failed to join session");
+            res.setErrorCode(400);
+            return res;
+        }
+
+        res.setStatus("SUCCESS");
+        res.setMessage("Joined session successfully");
+        res.setErrorCode(0);
+        return res;
     }
+
 }

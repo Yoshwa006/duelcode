@@ -2,7 +2,11 @@ package com.example.comp.service;
 
 import com.example.comp.dto.QuestionDTO;
 import com.example.comp.model.Question;
+import com.example.comp.model.QuestionElastic;
+import com.example.comp.repo.QuestionElasticRepo;
 import com.example.comp.repo.QuestionRepo;
+import io.netty.util.internal.StringUtil;
+import org.hibernate.exception.DataException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -17,6 +21,8 @@ public class QuestionService {
     private QuestionRepo questionRepo;
     @Autowired
     RedisTemplate<String, Object> redis;
+    @Autowired
+    QuestionElasticRepo questionElasticRepo;
 
     public List<QuestionDTO> getAllQuestions() {
             return questionRepo.findAll()
@@ -58,6 +64,33 @@ public class QuestionService {
         return questionRepo.save(question);
     }
 
+    public String saveQuestion(QuestionElastic request) {
 
+        if (request == null) {
+            return "Request body is empty.";
+        }
 
+        try {
+            if (request.getId() == null) {
+                request.setId(UUID.randomUUID());
+            }
+
+            questionElasticRepo.save(request);
+            return "Question saved successfully with ID: " + request.getId();
+        }
+        catch (Exception e) {
+            return "Error occurred while saving: " + e.getMessage();
+        }
+    }
+
+    public QuestionElastic findByQuestionName(String name){
+        if(StringUtil.isNullOrEmpty(name)){
+            System.out.println("Name is empty !");
+        }
+        return questionElasticRepo.findByTitle(name);
+    }
+
+    public boolean containsByTitle(String title){
+        return questionElasticRepo.existsByTitle(title);
+    }
 }

@@ -15,16 +15,12 @@ import java.util.UUID;
 @RequestMapping("/api")
 public class MainController {
 
-    @Autowired
-    private JudgeService judgeService;
-
-    @Autowired
-    private SubmitService submitService;
+    @Autowired private JudgeService judgeService;
+    @Autowired private SubmitService submitService;
 
     @PostMapping("/generate")
-    public ResponseEntity<OperationStatusResponse> generate(@RequestBody UUID questionId) {
-        OperationStatusResponse res = judgeService.generateKey(questionId);
-        return new ResponseEntity<>(res, mapStatus(res.getErrorCode()));
+    public String generate(@RequestBody UUID questionId) {
+        return judgeService.generateKey(questionId);
     }
 
     @PostMapping("/submit")
@@ -34,9 +30,9 @@ public class MainController {
     }
 
     @PostMapping("/join-random")
-    public ResponseEntity<OperationStatusResponse> joinRandom() {
-        OperationStatusResponse res = judgeService.joinRandom();
-        return new ResponseEntity<>(res, mapStatus(res.getErrorCode()));
+    public String joinRandom() {
+        Boolean res = judgeService.joinRandom();
+        return res.toString();
     }
 
     @GetMapping("/join-key")

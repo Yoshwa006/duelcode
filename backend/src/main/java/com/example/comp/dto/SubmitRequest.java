@@ -1,6 +1,7 @@
 package com.example.comp.dto;
 
 
+import com.example.comp.model.Question;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +11,6 @@ public class SubmitRequest {
 
     String source_code;
     int language_id;
-    String stdin;
-    String expected_output;
+    Question question;
     String token;
 }

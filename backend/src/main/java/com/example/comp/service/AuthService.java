@@ -6,6 +6,7 @@ import com.example.comp.dto.Mapper;
 import com.example.comp.model.Users;
 import com.example.comp.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -48,7 +49,7 @@ public class AuthService {
             return response; // wrong password
         }
 
-        // success
+
         String token = jwtService.generateToken(user.getEmail());
         response.setValid(true);
         response.setToken(token);
