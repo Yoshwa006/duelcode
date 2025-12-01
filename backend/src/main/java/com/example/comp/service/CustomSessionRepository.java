@@ -7,7 +7,12 @@ import com.example.comp.model.Users;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -40,6 +45,9 @@ public class CustomSessionRepository {
         }
         if (request.getJoinedUserName() != null) {
             predicates.add(cb.equal(joiner.get("name"), request.getJoinedUserName()));
+        }
+        if(request.getJoinedByEmail() != null){
+            predicates.add(cb.equal(joiner.get("email"), request.getJoinedByEmail()));
         }
         if (request.getDifficulty() != null) {
             predicates.add(cb.equal(question.get("difficulty"), request.getDifficulty()));
