@@ -1,11 +1,12 @@
 package com.example.comp.service;
 
 import com.example.comp.dto.*;
+import com.example.comp.mapper.Mapper;
 import com.example.comp.model.Session;
 import com.example.comp.model.Users;
 import com.example.comp.repo.SessionRepo;
-import com.example.comp.util.CurrentUser;
-import com.example.comp.util.Status;
+import com.example.comp.component.CurrentUser;
+import com.example.comp.enums.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;

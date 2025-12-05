@@ -1,7 +1,7 @@
 package com.example.comp.model;
 
 
-import com.example.comp.util.Status;
+import com.example.comp.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -14,7 +14,7 @@ public class CompApplication {
         SpringApplication app = new SpringApplication(CompApplication.class);
 
         ScriptService starter = new ScriptService(
-                "/home/yoshwa/Java/backend-java-comp/backend/src/main/java/com/example/comp/util/start-es.sh",
+                "/home/yoshwa/Java/backend-java-comp/backend/src/main/resources/scripts/start-es.sh",
                 9200,
                 Duration.ofSeconds(60),
                 Duration.ofSeconds(2)

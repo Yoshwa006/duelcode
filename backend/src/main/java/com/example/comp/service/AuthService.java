@@ -2,7 +2,7 @@ package com.example.comp.service;
 
 import com.example.comp.dto.auth.AuthRequest;
 import com.example.comp.dto.auth.AuthResponse;
-import com.example.comp.dto.Mapper;
+import com.example.comp.mapper.Mapper;
 import com.example.comp.model.Users;
 import com.example.comp.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;

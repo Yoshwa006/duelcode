@@ -3,6 +3,7 @@ package com.example.comp.service;
 import com.example.comp.dto.SessionResponseDTO;
 import com.example.comp.dto.SessionSearchRequestDTO;
 import com.example.comp.model.Session;
+import com.example.comp.repo.CustomSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
