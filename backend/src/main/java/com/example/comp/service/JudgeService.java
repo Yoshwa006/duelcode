@@ -26,18 +26,27 @@ public class JudgeService {
     @Autowired private QuestionRepo questionRepo;
     @Autowired private CurrentUser currentUser;
 
+    private static final String TOKEN_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final int TOKEN_LENGTH = 4;
+    private static final int MAX_ATTEMPTS = 32;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private String newToken() {
-        final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        SecureRandom random = new SecureRandom();
+        char[] tokenChars = new char[TOKEN_LENGTH];
 
-        String token;
-        do {
-            token = random.ints(4, 0, chars.length())
-                    .mapToObj(i -> String.valueOf(chars.charAt(i)))
-                    .collect(Collectors.joining());
-        } while (sessionRepo.existsByToken(token));
-
-        return token;
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+            for (int i = 0; i < TOKEN_LENGTH; i++) {
+                tokenChars[i] = TOKEN_CHARS.charAt(SECURE_RANDOM.nextInt(TOKEN_CHARS.length()));
+            }
+            String token = new String(tokenChars);
+            if (!sessionRepo.existsByToken(token)) {
+                return token;
+            }
+        }
+        // fallback: use a rare value to ensure uniqueness, as a last resort
+        String fallbackToken = Long.toString(Math.abs(SECURE_RANDOM.nextLong()), 36).toUpperCase();
+        log.warn("Exhausted {} attempts to generate unique token, using fallback [{}]", MAX_ATTEMPTS, fallbackToken);
+        return fallbackToken;
     }
 
     public String generateKey(UUID quesId) {
