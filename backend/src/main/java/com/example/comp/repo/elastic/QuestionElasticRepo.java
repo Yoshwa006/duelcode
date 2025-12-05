@@ -1,4 +1,4 @@
-package com.example.comp.repo;
+package com.example.comp.repo.elastic;
 
 import com.example.comp.model.QuestionElastic;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;

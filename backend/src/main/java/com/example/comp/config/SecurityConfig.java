@@ -44,7 +44,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // allow unauthenticated access to auth endpoints or public resources
-                        .requestMatchers("/api/auth/**", "/api/public/**", "/actuator/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/public/**", "/actuator/health").permitAll()
                         .anyRequest().authenticated()
                 )
                 // add jwt filter before UsernamePasswordAuthenticationFilter

@@ -6,7 +6,7 @@ import com.example.comp.dto.Mapper;
 import com.example.comp.model.Users;
 import com.example.comp.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,11 +14,13 @@ public class AuthService {
 
     private final UserRepo repo;
     private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AuthService(UserRepo repo, JwtService jwtService) {
+    public AuthService(UserRepo repo, JwtService jwtService, PasswordEncoder passwordEncoder) {
         this.repo = repo;
         this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public boolean isEmailExists(String email) {
@@ -30,6 +32,8 @@ public class AuthService {
             throw new RuntimeException("Email already exists");
         }
         Users savingUser = Mapper.DTOtoUser(authDTO);
+        // Hash password before saving
+        savingUser.setPassword(passwordEncoder.encode(authDTO.getPassword()));
         repo.save(savingUser);
     }
 
@@ -43,12 +47,12 @@ public class AuthService {
             return response; // email not found
         }
 
-        if (!user.getPassword().equals(request.getPassword())) {
+        // Use password encoder to compare hashed password
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             response.setValid(false);
             response.setToken(null);
             return response; // wrong password
         }
-
 
         String token = jwtService.generateToken(user.getEmail());
         response.setValid(true);

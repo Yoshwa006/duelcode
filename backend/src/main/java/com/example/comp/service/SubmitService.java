@@ -4,7 +4,6 @@ import com.example.comp.dto.*;
 import com.example.comp.model.Session;
 import com.example.comp.model.Users;
 import com.example.comp.repo.SessionRepo;
-import com.example.comp.repo.UserRepo;
 import com.example.comp.util.CurrentUser;
 import com.example.comp.util.Status;
 import lombok.extern.slf4j.Slf4j;
@@ -17,15 +16,14 @@ public class SubmitService {
 
     private final WebClient client;
     private final SessionRepo sessionRepo;
-    private final UserRepo userRepo;
     private final CurrentUser currentUser;
 
-    public SubmitService(SessionRepo sessionRepo, UserRepo userRepo, CurrentUser currentUser) {
+    public SubmitService(SessionRepo sessionRepo, CurrentUser currentUser,
+                         @org.springframework.beans.factory.annotation.Value("${judge.api.url:http://localhost:3001}") String judgeApiUrl) {
         this.client = WebClient.builder()
-                .baseUrl("http://localhost:3001")
+                .baseUrl(judgeApiUrl)
                 .build();
         this.sessionRepo = sessionRepo;
-        this.userRepo = userRepo;
         this.currentUser = currentUser;
     }
 

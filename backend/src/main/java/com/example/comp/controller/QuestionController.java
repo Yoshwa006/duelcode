@@ -25,17 +25,17 @@ public class QuestionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getQuestionById(@RequestBody @PathVariable UUID id) {
+    public ResponseEntity<?> getQuestionById(@PathVariable UUID id) {
         return ResponseEntity.ok(questionService.getQuestionById(id));
     }
 
     @PostMapping
-    public String saveQuestion(@RequestBody QuestionElastic request) {
+    public ResponseEntity<String> saveQuestion(@RequestBody QuestionElastic request) {
         try {
             String result = questionService.saveQuestion(request);
-            return result;
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return "exception";
+            return ResponseEntity.status(500).body("Error occurred while saving question: " + e.getMessage());
         }
     }
 
@@ -51,10 +51,9 @@ public class QuestionController {
     }
 
     @GetMapping("/existsByTitle/{title}")
-    public boolean existsByTitle(@PathVariable String title){
-        boolean test = questionService.containsByTitle(title);
-
-        return test;
+    public ResponseEntity<Boolean> existsByTitle(@PathVariable String title){
+        boolean exists = questionService.containsByTitle(title);
+        return ResponseEntity.ok(exists);
     }
 
 }

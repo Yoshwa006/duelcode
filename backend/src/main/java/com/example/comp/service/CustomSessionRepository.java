@@ -37,47 +37,61 @@ public class CustomSessionRepository {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        if (request.getCreatorEmail() != null) {
+        if (request.getCreatorEmail() != null && !request.getCreatorEmail().trim().isEmpty()) {
             predicates.add(cb.equal(creator.get("email"), request.getCreatorEmail()));
         }
-        if (request.getCreatedUserName() != null) {
-            predicates.add(cb.equal(creator.get("name"), request.getCreatedUserName()));
+        if (request.getCreatedUserName() != null && !request.getCreatedUserName().trim().isEmpty()) {
+            predicates.add(cb.equal(creator.get("email"), request.getCreatedUserName())); // Users doesn't have 'name', using email
         }
-        if (request.getJoinedUserName() != null) {
-            predicates.add(cb.equal(joiner.get("name"), request.getJoinedUserName()));
+        if (request.getJoinedUserName() != null && !request.getJoinedUserName().trim().isEmpty()) {
+            predicates.add(cb.equal(joiner.get("email"), request.getJoinedUserName())); // Users doesn't have 'name', using email
         }
-        if(request.getJoinedByEmail() != null){
+        if(request.getJoinedByEmail() != null && !request.getJoinedByEmail().trim().isEmpty()){
             predicates.add(cb.equal(joiner.get("email"), request.getJoinedByEmail()));
         }
-        if (request.getDifficulty() != null) {
+        if (request.getDifficulty() != null && !request.getDifficulty().trim().isEmpty()) {
             predicates.add(cb.equal(question.get("difficulty"), request.getDifficulty()));
         }
-        if (request.getStatus() != null) {
+        if (request.getStatus() != null && !request.getStatus().trim().isEmpty()) {
             predicates.add(cb.equal(session.get("status"), request.getStatus()));
         }
-        if (request.getStartDate() != null) {
-            predicates.add(cb.greaterThanOrEqualTo(
-                    session.get("createdAt"),
-                    Instant.parse(request.getStartDate())
-            ));
+        if (request.getStartDate() != null && !request.getStartDate().trim().isEmpty()) {
+            try {
+                predicates.add(cb.greaterThanOrEqualTo(
+                        session.get("createdAt"),
+                        Instant.parse(request.getStartDate())
+                ));
+            } catch (Exception e) {
+                // Invalid date format, skip this predicate
+            }
         }
-        if (request.getEndDate() != null) {
-            predicates.add(cb.lessThanOrEqualTo(
-                    session.get("createdAt"),
-                    Instant.parse(request.getEndDate())
-            ));
+        if (request.getEndDate() != null && !request.getEndDate().trim().isEmpty()) {
+            try {
+                predicates.add(cb.lessThanOrEqualTo(
+                        session.get("createdAt"),
+                        Instant.parse(request.getEndDate())
+                ));
+            } catch (Exception e) {
+                // Invalid date format, skip this predicate
+            }
         }
 
         cq.where(predicates.toArray(new Predicate[0]));
 
-        if (request.getDirection().equalsIgnoreCase("desc")) {
-            cq.orderBy(cb.desc(session.get(request.getSortBy())));
+        String sortBy = request.getSortBy() != null ? request.getSortBy() : "createdAt";
+        if (request.getDirection() != null && request.getDirection().equalsIgnoreCase("desc")) {
+            cq.orderBy(cb.desc(session.get(sortBy)));
         } else {
-            cq.orderBy(cb.asc(session.get(request.getSortBy())));
-
+            cq.orderBy(cb.asc(session.get(sortBy)));
         }
 
         TypedQuery<Session> query = em.createQuery(cq);
+
+        // Add pagination
+        int page = request.getPage() != null && request.getPage() >= 0 ? request.getPage() : 0;
+        int size = request.getSize() != null && request.getSize() > 0 ? request.getSize() : 10;
+        query.setFirstResult(page * size);
+        query.setMaxResults(size);
 
         return query.getResultList();
     }
