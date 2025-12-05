@@ -3,17 +3,18 @@ package com.example.comp.service;
 import com.example.comp.dto.QuestionDTO;
 import com.example.comp.model.Question;
 import com.example.comp.model.QuestionElastic;
-import com.example.comp.repo.QuestionElasticRepo;
+import com.example.comp.repo.elastic.QuestionElasticRepo;
 import com.example.comp.repo.QuestionRepo;
-import io.netty.util.internal.StringUtil;
-import org.hibernate.exception.DataException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class QuestionService {
 
@@ -47,9 +48,15 @@ public class QuestionService {
     }
 
     public Question getQuestionById(UUID id) {
+        String cacheKey = "question::" + id;
+        Question cachedQuestion = (Question) redis.opsForValue().get(cacheKey);
+        if (cachedQuestion != null) {
+            return cachedQuestion;
+        }
+        
         Question question = questionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Question not found with id: " + id));
-        redis.opsForValue().set("question::", question);
+        redis.opsForValue().set(cacheKey, question);
         return question;
     }
     public Question createQuestion(Question question) {
@@ -84,8 +91,9 @@ public class QuestionService {
     }
 
     public QuestionElastic findByQuestionName(String name){
-        if(StringUtil.isNullOrEmpty(name)){
-            System.out.println("Name is empty !");
+        if(!StringUtils.hasText(name)){
+            log.warn("findByQuestionName called with empty name");
+            return null;
         }
         return questionElasticRepo.findByTitle(name);
     }

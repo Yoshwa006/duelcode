@@ -36,10 +36,14 @@ public class SessionService {
         dto.setDifficulty(
                 s.getQuestion() != null ? s.getQuestion().getDifficulty() : null
         );
-        dto.setStatus(s.getStatus().toString());
-        dto.setCreatedUserName(s.getCreatedBy().getUsername());
-        dto.setJoinedUserName(s.getJoinedBy().getUsername());
-        dto.setCreatedAt(s.getCreatedAt().toString());
+        dto.setStatus(s.getStatus() != null ? s.getStatus().toString() : null);
+        dto.setCreatedUserName(
+                s.getCreatedBy() != null ? s.getCreatedBy().getUsername() : null
+        );
+        dto.setJoinedUserName(
+                s.getJoinedBy() != null ? s.getJoinedBy().getUsername() : null
+        );
+        dto.setCreatedAt(s.getCreatedAt() != null ? s.getCreatedAt().toString() : null);
         return dto;
     }
 }

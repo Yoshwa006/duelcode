@@ -2,9 +2,9 @@ package com.example.comp.controller;
 
 import com.example.comp.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/mail")
@@ -13,14 +13,20 @@ public class MailController {
     @Autowired
     private EmailService emailService;
 
+    @Value("${app.mail.default-recipient:}")
+    private String defaultRecipient;
 
-    @GetMapping("/")
-    public String sendWelcomeEmail() {
+    @GetMapping()
+    public ResponseEntity<String> sendWelcomeEmail(@RequestParam(required = false) String to) {
+        String recipient = (to != null && !to.isEmpty()) ? to : defaultRecipient;
+        if (recipient == null || recipient.isEmpty()) {
+            return ResponseEntity.badRequest().body("Recipient email is required");
+        }
         emailService.sendMail(
-                "joshuaallwin94965@gmail.com",
-                "You registered with the DuelCode !",
+                recipient,
+                "Welcome to DuelCode!",
                 "Hey there! Welcome to our service."
         );
-        return "Email sent!";
+        return ResponseEntity.ok("Email sent successfully!");
     }
 }

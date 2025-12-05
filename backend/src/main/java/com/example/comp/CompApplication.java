@@ -9,8 +9,8 @@ import java.time.Duration;
 @SpringBootApplication
 public class CompApplication {
 
-    public static void main(String[] args) {
 
+    public static void main(String[] args) {
         SpringApplication app = new SpringApplication(CompApplication.class);
 
         ScriptService starter = new ScriptService(

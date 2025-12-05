@@ -19,17 +19,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody AuthRequest authRequest) {
-        try {
-            authService.register(authRequest);
-            return ResponseEntity.ok("User registered successfully");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<String> register(@jakarta.validation.Valid @RequestBody AuthRequest authRequest) {
+        authService.register(authRequest);
+        return ResponseEntity.ok("User registered successfully");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<String> login(@jakarta.validation.Valid @RequestBody AuthRequest authRequest) {
         AuthResponse response = authService.login(authRequest);
 
         if (!response.getValid()) {

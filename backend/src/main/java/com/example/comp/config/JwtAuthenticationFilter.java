@@ -42,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 userEmail = service.extractUsername(jwt);
             } catch (Exception ex) {
                 // invalid token — just continue filter chain without setting auth
-                logger.debug("Invalid JWT token: {}");
+                logger.debug("Invalid JWT token", ex);
             }
         }
 
@@ -62,7 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             } catch (Exception ex) {
-                logger.debug("UserDetails load failed or token invalid: {}");
+                logger.debug("UserDetails load failed or token invalid", ex);
                 // don't set authentication; just continue
             }
         }

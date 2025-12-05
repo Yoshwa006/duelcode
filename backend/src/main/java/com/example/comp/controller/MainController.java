@@ -35,9 +35,19 @@ public class MainController {
     }
 
     @PostMapping("/join-random")
-    public String joinRandom() {
-        Boolean res = judgeService.joinRandom();
-        return res.toString();
+    public ResponseEntity<OperationStatusResponse> joinRandom() {
+        boolean joined = judgeService.joinRandom();
+        OperationStatusResponse res = new OperationStatusResponse();
+        if (joined) {
+            res.setStatus("SUCCESS");
+            res.setMessage("Successfully joined a random session");
+            res.setErrorCode(0);
+        } else {
+            res.setStatus("FAILED");
+            res.setMessage("No available sessions to join");
+            res.setErrorCode(404);
+        }
+        return new ResponseEntity<>(res, mapStatus(res.getErrorCode()));
     }
 
     @GetMapping("/join-key")
