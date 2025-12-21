@@ -35,7 +35,7 @@ public class SessionService {
                 s.getQuestion() != null ? s.getQuestion().getTitle() : null
         );
         dto.setDifficulty(
-                s.getQuestion() != null ? s.getQuestion().getDifficulty() : null
+                s.getQuestion() != null ? s.getQuestion().getDifficulty().toString() : null
         );
         dto.setStatus(s.getStatus() != null ? s.getStatus().toString() : null);
         dto.setCreatedUserName(

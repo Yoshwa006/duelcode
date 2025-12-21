@@ -41,7 +41,7 @@ public class QuestionService {
         dto.setId(question.getId());
         dto.setTitle(question.getTitle());
         dto.setDescription(question.getDescription());
-        dto.setDifficulty(question.getDifficulty());
+        dto.setDifficulty(question.getDifficulty().toString());
         dto.setStdIn(question.getStdIn());
         dto.setExpectedOutput(question.getExpectedOutput());
         return dto;

@@ -81,12 +81,16 @@ public class SubmitService {
         return res;
     }
 
+    /**
+     * Checks if user created or joined session
+     */
     private boolean isUserInSession(int userId, Session session) {
         return (session.getCreatedBy() != null && session.getCreatedBy().getId() == userId)
                 || (session.getJoinedBy() != null && session.getJoinedBy().getId() == userId);
     }
 
     private JudgeResponse runJudge(SubmitAPI submission) {
+        // Executes external judge API; handles failures
         try {
             return client.post()
                     .uri("/run-code")

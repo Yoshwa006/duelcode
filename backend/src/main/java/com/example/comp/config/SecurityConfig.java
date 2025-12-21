@@ -37,22 +37,10 @@ public class SecurityConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        // allow unauthenticated access to auth endpoints or public resources
-                        .requestMatchers("/api/auth/**", "/api/public/**", "/actuator/health").permitAll()
-                        .anyRequest().authenticated()
-                )
-                // add jwt filter before UsernamePasswordAuthenticationFilter
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                // for stateless JWT, disable formLogin
-                .httpBasic(httpBasic -> httpBasic.disable())
-                .formLogin(form -> form.disable());
-
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         return http.build();
     }
 
