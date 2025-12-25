@@ -2,8 +2,8 @@ package com.example.comp.service;
 
 import com.example.comp.dto.QuestionDTO;
 import com.example.comp.model.Question;
-import com.example.comp.model.QuestionElastic;
-import com.example.comp.repo.elastic.QuestionElasticRepo;
+//import com.example.comp.model.QuestionElastic;
+//import com.example.comp.repo.elastic.QuestionElasticRepo;
 import com.example.comp.repo.QuestionRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,15 +22,13 @@ public class QuestionService {
     private QuestionRepo questionRepo;
     @Autowired
     RedisTemplate<String, Object> redis;
-    @Autowired
-    QuestionElasticRepo questionElasticRepo;
 
     public List<QuestionDTO> getAllQuestions() {
-            return questionRepo.findAll()
-                    .stream()
-                    .map(this::toQuestionDTO)
-                    .toList();
-        }
+        return questionRepo.findAll()
+                .stream()
+                .map(this::toQuestionDTO)
+                .toList();
+    }
 
     public QuestionDTO toQuestionDTO(Question question) {
         if (question == null) {
@@ -53,12 +51,13 @@ public class QuestionService {
         if (cachedQuestion != null) {
             return cachedQuestion;
         }
-        
+
         Question question = questionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Question not found with id: " + id));
         redis.opsForValue().set(cacheKey, question);
         return question;
     }
+
     public Question createQuestion(Question question) {
         return questionRepo.save(question);
     }
@@ -69,36 +68,5 @@ public class QuestionService {
         question.setDifficulty(questionDetails.getDifficulty());
         question.setDescription(questionDetails.getDescription());
         return questionRepo.save(question);
-    }
-
-    public String saveQuestion(QuestionElastic request) {
-
-        if (request == null) {
-            return "Request body is empty.";
-        }
-
-        try {
-            if (request.getId() == null) {
-                request.setId(UUID.randomUUID());
-            }
-
-            questionElasticRepo.save(request);
-            return "Question saved successfully with ID: " + request.getId();
-        }
-        catch (Exception e) {
-            return "Error occurred while saving: " + e.getMessage();
-        }
-    }
-
-    public QuestionElastic findByQuestionName(String name){
-        if(!StringUtils.hasText(name)){
-            log.warn("findByQuestionName called with empty name");
-            return null;
-        }
-        return questionElasticRepo.findByTitle(name);
-    }
-
-    public boolean containsByTitle(String title){
-        return questionElasticRepo.existsByTitle(title);
     }
 }

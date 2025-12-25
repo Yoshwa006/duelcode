@@ -16,10 +16,10 @@ public class TestCases {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne
-    @JoinColumn(name="question_number")
-    private Question question;
-
     String stdin;
     String expected_output;
+    @ManyToOne
+    @JoinColumn(name = "question_id")
+    private Question question;
+
 }
