@@ -7,6 +7,7 @@ import com.example.comp.model.Question;
 import com.example.comp.repo.QuestionRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -23,7 +24,9 @@ public class QuestionService {
     @Autowired
     RedisTemplate<String, Object> redis;
 
+    @Cacheable(value = "questions::all")
     public List<QuestionDTO> getAllQuestions() {
+        log.info("Fetching questions from DB");
         return questionRepo.findAll()
                 .stream()
                 .map(this::toQuestionDTO)
