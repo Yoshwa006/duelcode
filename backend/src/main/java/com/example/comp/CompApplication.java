@@ -1,27 +1,17 @@
 package com.example.comp;
 
-import com.example.comp.service.ScriptService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 
-import java.time.Duration;
-
+@EnableCaching
 @SpringBootApplication
 public class CompApplication {
 
 
     public static void main(String[] args) {
-        SpringApplication app = new SpringApplication(CompApplication.class);
+        SpringApplication.run(CompApplication.class, args);
 
-        ScriptService starter = new ScriptService(
-                "/home/yoshwa/Java/backend-java-comp/backend/src/main/resources/scripts/start-es.sh",
-                9200,
-                Duration.ofSeconds(60),
-                Duration.ofSeconds(2)
-        );
-
-        app.addInitializers(starter);
-        app.run(args);
     }
 
 }

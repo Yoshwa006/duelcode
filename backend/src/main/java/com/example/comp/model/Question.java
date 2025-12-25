@@ -2,9 +2,8 @@ package com.example.comp.model;
 
 import com.example.comp.enums.Difficulty;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 @Entity
 public class Question {
@@ -14,11 +13,33 @@ public class Question {
     private UUID id;
     private String title;
     private String description;
+
+    @Enumerated()
     private Difficulty difficulty;
     private String stdIn;
+    private String tags;
     private String expectedOutput;
-
     private int score;
+
+    public List<TestCases> getTestCases() {
+        return testCases;
+    }
+
+    public void setTestCases(List<TestCases> testCases) {
+        this.testCases = testCases;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    private List<TestCases> testCases;
+
 
 
     public void setDifficulty(Difficulty difficulty) {

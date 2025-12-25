@@ -1,15 +1,22 @@
 package com.example.comp.service;
 
-import com.example.comp.dto.*;
+import com.example.comp.component.CurrentUser;
+import com.example.comp.dto.JudgeResponse;
+import com.example.comp.dto.OperationStatusResponse;
+import com.example.comp.dto.SubmitAPI;
+import com.example.comp.dto.SubmitRequest;
+import com.example.comp.enums.Status;
 import com.example.comp.mapper.Mapper;
 import com.example.comp.model.Session;
+import com.example.comp.model.TestCases;
 import com.example.comp.model.Users;
 import com.example.comp.repo.SessionRepo;
-import com.example.comp.component.CurrentUser;
-import com.example.comp.enums.Status;
+import com.example.comp.repo.TestCasesRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -18,13 +25,15 @@ public class SubmitService {
     private final WebClient client;
     private final SessionRepo sessionRepo;
     private final CurrentUser currentUser;
+    private final TestCasesRepo testCasesRepo;
 
-    public SubmitService(SessionRepo sessionRepo, CurrentUser currentUser,
+    public SubmitService(SessionRepo sessionRepo, CurrentUser currentUser, TestCasesRepo testCasesRepo,
                          @org.springframework.beans.factory.annotation.Value("${judge.api.url:http://localhost:3001}") String judgeApiUrl) {
         this.client = WebClient.builder()
                 .baseUrl(judgeApiUrl)
                 .build();
         this.sessionRepo = sessionRepo;
+        this.testCasesRepo = testCasesRepo;
         this.currentUser = currentUser;
     }
 
@@ -59,6 +68,16 @@ public class SubmitService {
         }
 
         SubmitAPI submission = Mapper.SubmitRequestToAPI(request);
+        List<TestCases> tc = testCasesRepo.findByQuestionId(request.getQuestion().getId());
+        if (tc == null || tc.isEmpty()) {
+            res.setStatus("failure");
+            res.setMessage("No test cases found for question");
+            return res;
+        }
+        TestCases testCase = tc.get(0);
+
+        submission.setStdin(testCase.getStdin());
+        submission.setExpected_output(testCase.getExpected_output());
         JudgeResponse result = runJudge(submission);
 
         if (result == null) {
