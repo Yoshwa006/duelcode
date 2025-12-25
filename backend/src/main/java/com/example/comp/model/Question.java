@@ -2,10 +2,7 @@ package com.example.comp.model;
 
 import com.example.comp.enums.Difficulty;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 @Entity

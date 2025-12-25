@@ -2,15 +2,12 @@ package com.example.comp.service;
 
 import com.example.comp.dto.QuestionDTO;
 import com.example.comp.model.Question;
-//import com.example.comp.model.QuestionElastic;
-//import com.example.comp.repo.elastic.QuestionElasticRepo;
 import com.example.comp.repo.QuestionRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.UUID;
