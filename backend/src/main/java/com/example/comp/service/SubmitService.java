@@ -12,6 +12,7 @@ import com.example.comp.model.TestCases;
 import com.example.comp.model.Users;
 import com.example.comp.repo.SessionRepo;
 import com.example.comp.repo.TestCasesRepo;
+import com.example.comp.repo.UserStatsRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -26,8 +27,9 @@ public class SubmitService {
     private final SessionRepo sessionRepo;
     private final CurrentUser currentUser;
     private final TestCasesRepo testCasesRepo;
-
+    private final UserStatsRepo userStatsRepo;
     public SubmitService(SessionRepo sessionRepo, CurrentUser currentUser, TestCasesRepo testCasesRepo,
+                         UserStatsRepo userStatsRepo,
                          @org.springframework.beans.factory.annotation.Value("${judge.api.url:http://localhost:3001}") String judgeApiUrl) {
         this.client = WebClient.builder()
                 .baseUrl(judgeApiUrl)
@@ -35,6 +37,7 @@ public class SubmitService {
         this.sessionRepo = sessionRepo;
         this.testCasesRepo = testCasesRepo;
         this.currentUser = currentUser;
+        this.userStatsRepo = userStatsRepo;
     }
 
     public OperationStatusResponse submitCode(SubmitRequest request) {
@@ -85,6 +88,7 @@ public class SubmitService {
             res.setMessage("Judge API failed");
             return res;
         }
+
 
         if ("Accepted".equalsIgnoreCase(result.getStatus())) {
             session.setWho_won(user);

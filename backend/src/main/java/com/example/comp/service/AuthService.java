@@ -89,6 +89,7 @@ public class AuthService {
         passwordResetToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
         passwordTokenResetRepo.save(passwordResetToken);
         String url = "http://localhost:8080/auth/reset-password?token=" +  token;
+
         emailService.sendMail(
                 users.getEmail(),
                 "Forget password reset link",
