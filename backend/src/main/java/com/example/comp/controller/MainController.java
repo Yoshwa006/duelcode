@@ -4,6 +4,8 @@ import com.example.comp.dto.OperationStatusResponse;
 import com.example.comp.dto.SessionResponseDTO;
 import com.example.comp.dto.SessionSearchRequestDTO;
 import com.example.comp.dto.SubmitRequest;
+import com.example.comp.model.UserStats;
+import com.example.comp.repo.UserStatsRepo;
 import com.example.comp.service.JudgeService;
 import com.example.comp.service.SessionService;
 import com.example.comp.service.SubmitService;
@@ -22,6 +24,7 @@ public class MainController {
     @Autowired private JudgeService judgeService;
     @Autowired private SubmitService submitService;
     @Autowired private SessionService sessionService;
+    @Autowired private UserStatsRepo userStatsRepo;
 
     @PostMapping("/generate")
     public String generate(@RequestBody UUID questionId) {
@@ -71,4 +74,10 @@ public class MainController {
     public List<SessionResponseDTO> searchSessions(@RequestBody SessionSearchRequestDTO requestDTO){
         return sessionService.searchSessions(requestDTO);
     }
+
+    @GetMapping("/leaderboard")
+    public List<UserStats> leaderboard() {
+        return userStatsRepo.findTop100ByOrderByEloRatingDesc();
+    }
+
 }

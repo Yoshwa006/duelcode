@@ -6,6 +6,7 @@ import com.example.comp.dto.OperationStatusResponse;
 import com.example.comp.dto.SubmitAPI;
 import com.example.comp.dto.SubmitRequest;
 import com.example.comp.enums.Status;
+import com.example.comp.events.BattleEventPublisher;
 import com.example.comp.mapper.Mapper;
 import com.example.comp.model.Session;
 import com.example.comp.model.TestCases;
@@ -28,8 +29,10 @@ public class SubmitService {
     private final CurrentUser currentUser;
     private final TestCasesRepo testCasesRepo;
     private final UserStatsRepo userStatsRepo;
+    private final BattleEventPublisher battleEventPublisher;
     public SubmitService(SessionRepo sessionRepo, CurrentUser currentUser, TestCasesRepo testCasesRepo,
                          UserStatsRepo userStatsRepo,
+                         BattleEventPublisher battleEventPublisher,
                          @org.springframework.beans.factory.annotation.Value("${judge.api.url:http://localhost:3001}") String judgeApiUrl) {
         this.client = WebClient.builder()
                 .baseUrl(judgeApiUrl)
@@ -38,6 +41,7 @@ public class SubmitService {
         this.testCasesRepo = testCasesRepo;
         this.currentUser = currentUser;
         this.userStatsRepo = userStatsRepo;
+        this.battleEventPublisher = battleEventPublisher;
     }
 
     public OperationStatusResponse submitCode(SubmitRequest request) {
@@ -94,6 +98,10 @@ public class SubmitService {
             session.setWho_won(user);
             session.setStatus(Status.STATUS_COMPLETED);
             sessionRepo.save(session);
+
+            //publish for leaderboard things
+            battleEventPublisher.publishBattleFinished(session.getId());
+
             res.setStatus("success");
             res.setMessage("Correct answer. You won the battle");
             return res;

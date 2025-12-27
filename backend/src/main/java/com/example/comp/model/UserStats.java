@@ -1,32 +1,29 @@
 package com.example.comp.model;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.UUID;
 
 @Entity
-@Setter
+@Table(name = "user_stats")
 @Getter
-
+@Setter
 public class UserStats {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private int userId;
 
-    private int elo;
+    private int eloRating = 1200;
 
     private int rankedWins;
     private int rankedLosses;
-    private int questionsSolved;
+
     private int totalScore;
+    private int questionsSolved;
 
     private long totalSolveTime;
-
-    private int season;
 }
