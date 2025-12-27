@@ -26,7 +26,7 @@ public class Session {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "created_by")
     private Users createdBy;
 
@@ -35,7 +35,7 @@ public class Session {
     @Column(nullable = false, unique = true)
     private String token;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "joined_by")
     private Users joinedBy;
 

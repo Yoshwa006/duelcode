@@ -2,6 +2,7 @@ package com.example.comp.service;
 
 import com.example.comp.component.CurrentUser;
 import com.example.comp.dto.OperationStatusResponse;
+import com.example.comp.enums.BattleType;
 import com.example.comp.enums.Status;
 import com.example.comp.model.Question;
 import com.example.comp.model.Session;
@@ -92,7 +93,7 @@ public class JudgeService {
      * @return true if joined successfully, false otherwise.
      */
     @Transactional
-    protected boolean joinSession(Session session) {
+    protected boolean joinSession(Session session, boolean isFriendly) {
         if (session == null) {
             log.debug("joinSession failed: Provided session is null.");
             return false;
@@ -113,7 +114,12 @@ public class JudgeService {
             log.debug("joinSession failed: User [{}] cannot join their own session [{}].", user.getId(), session.getId());
             return false;
         }
-
+        if(isFriendly){
+            session.setBattleType(BattleType.FRIENDLY);
+        }
+        else{
+            session.setBattleType(BattleType.RANKED);
+        }
         session.setJoinedBy(user);
         session.setStatus(Status.STATUS_PLAYING);
         sessionRepo.save(session);
@@ -129,7 +135,7 @@ public class JudgeService {
     @Transactional
     public boolean joinRandom() {
         Session session = sessionRepo.findTopByJoinedByIsNullOrderByCreatedAtDesc();
-        boolean joined = joinSession(session);
+        boolean joined = joinSession(session, false);
         if (!joined) {
             log.info("No available sessions to join for user [{}].", (currentUser.get() != null ? currentUser.get().getId() : null));
         }
@@ -163,8 +169,7 @@ public class JudgeService {
             return res;
         }
 
-        boolean joined = joinSession(session);
-
+        boolean joined = joinSession(session, true);
         if (!joined) {
             res.setStatus("FAILED");
             res.setMessage("Failed to join session. It may already have been joined or you are not allowed to join.");

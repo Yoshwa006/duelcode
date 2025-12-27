@@ -47,8 +47,9 @@ public class SubmitService {
     public OperationStatusResponse submitCode(SubmitRequest request) {
 
         OperationStatusResponse res = new OperationStatusResponse();
-
-        Session session = sessionRepo.findByToken(request.getToken());
+        int userId = currentUser.get().getId();
+        Session session  = sessionRepo.findSessionsForUser(userId);
+//        Session session = sessionRepo.findByToken(request.getToken());
         if (session == null) {
             res.setStatus("failure");
             res.setMessage("Session does not exist");
@@ -75,7 +76,7 @@ public class SubmitService {
         }
 
         SubmitAPI submission = Mapper.SubmitRequestToAPI(request);
-        List<TestCases> tc = testCasesRepo.findByQuestionId(request.getQuestion().getId());
+        List<TestCases> tc = testCasesRepo.findByQuestionId(session.getQuestion().getId());
         if (tc == null || tc.isEmpty()) {
             res.setStatus("failure");
             res.setMessage("No test cases found for question");
