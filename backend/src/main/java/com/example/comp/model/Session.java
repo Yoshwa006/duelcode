@@ -1,6 +1,7 @@
 package com.example.comp.model;
 
 
+import com.example.comp.enums.BattleType;
 import com.example.comp.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,7 +26,7 @@ public class Session {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "created_by")
     private Users createdBy;
 
@@ -34,7 +35,7 @@ public class Session {
     @Column(nullable = false, unique = true)
     private String token;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "joined_by")
     private Users joinedBy;
 
@@ -49,6 +50,9 @@ public class Session {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Status status;
+
+    @Enumerated(EnumType.STRING)
+    private BattleType battleType;
 
     public Session(String token, Users createdBy, Question question) {
         this.token = token;

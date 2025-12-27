@@ -3,6 +3,7 @@ package com.example.comp.mapper;
 import com.example.comp.dto.SubmitAPI;
 import com.example.comp.dto.SubmitRequest;
 import com.example.comp.dto.auth.AuthRequest;
+import com.example.comp.model.TestCases;
 import com.example.comp.model.Users;
 
 public class Mapper {
@@ -25,7 +26,7 @@ public class Mapper {
         SubmitAPI submitAPI = new SubmitAPI();
         submitAPI.setSource_code(request.getSource_code());
         submitAPI.setLanguage_id(request.getLanguage_id());
-        submitAPI.setStdin(request.getQuestion().getStdIn());
+//        submitAPI.setStdin(request.getQuestion().getStdIn());
         return submitAPI;
     }
 }

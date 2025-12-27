@@ -1,9 +1,8 @@
 package com.example.comp.controller;
 
-import com.example.comp.dto.OperationStatusResponse;
-import com.example.comp.dto.SessionResponseDTO;
-import com.example.comp.dto.SessionSearchRequestDTO;
-import com.example.comp.dto.SubmitRequest;
+import com.example.comp.dto.*;
+import com.example.comp.model.UserStats;
+import com.example.comp.repo.UserStatsRepo;
 import com.example.comp.service.JudgeService;
 import com.example.comp.service.SessionService;
 import com.example.comp.service.SubmitService;
@@ -22,10 +21,11 @@ public class MainController {
     @Autowired private JudgeService judgeService;
     @Autowired private SubmitService submitService;
     @Autowired private SessionService sessionService;
+    @Autowired private UserStatsRepo userStatsRepo;
 
     @PostMapping("/generate")
-    public String generate(@RequestBody UUID questionId) {
-        return judgeService.generateKey(questionId);
+    public String generate(@RequestBody GenerateRequest request) {
+        return judgeService.generateKey(request.getQuestionId());
     }
 
     @PostMapping("/submit")
@@ -34,7 +34,7 @@ public class MainController {
         return new ResponseEntity<>(res, mapStatus(res.getErrorCode()));
     }
 
-    @PostMapping("/join-random")
+    @GetMapping("/join-random")
     public ResponseEntity<OperationStatusResponse> joinRandom() {
         boolean joined = judgeService.joinRandom();
         OperationStatusResponse res = new OperationStatusResponse();
@@ -71,4 +71,10 @@ public class MainController {
     public List<SessionResponseDTO> searchSessions(@RequestBody SessionSearchRequestDTO requestDTO){
         return sessionService.searchSessions(requestDTO);
     }
+
+    @GetMapping("/leaderboard")
+    public List<UserStats> leaderboard() {
+        return userStatsRepo.findTop100ByOrderByEloRatingDesc();
+    }
+
 }

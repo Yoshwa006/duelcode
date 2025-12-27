@@ -5,10 +5,7 @@ import com.example.comp.dto.auth.AuthResponse;
 import com.example.comp.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -38,5 +35,14 @@ public class AuthController {
         return ResponseEntity.ok(response.getToken());
     }
 
+    @PostMapping("/forget-password")
+    public String forgetPassword(String email){
+        return authService.forgetPassword(email);
+    }
 
+    @PostMapping("/reset-password")
+    public boolean resetPassword(@RequestParam String token,
+                                 @RequestBody String newPassword){
+        return authService.resetPassword(token, newPassword);
+    }
 }

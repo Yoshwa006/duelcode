@@ -22,4 +22,15 @@ public interface SessionRepo extends JpaRepository<Session, UUID> {
 
     Session findTopByJoinedByIsNullOrderByCreatedAtDesc();
 
+    @Query("""
+    SELECT s
+    FROM Session s
+    WHERE s.createdBy.id = :userId
+       OR s.joinedBy.id = :userId
+       and s.status = 'STATUS_PLAYING'
+    ORDER BY s.createdAt DESC
+    limit 1
+""")
+    Session findSessionsForUser(@Param("userId") int userId);
+
 }

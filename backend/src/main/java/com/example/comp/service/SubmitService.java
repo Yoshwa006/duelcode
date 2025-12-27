@@ -6,12 +6,14 @@ import com.example.comp.dto.OperationStatusResponse;
 import com.example.comp.dto.SubmitAPI;
 import com.example.comp.dto.SubmitRequest;
 import com.example.comp.enums.Status;
+import com.example.comp.events.BattleEventPublisher;
 import com.example.comp.mapper.Mapper;
 import com.example.comp.model.Session;
 import com.example.comp.model.TestCases;
 import com.example.comp.model.Users;
 import com.example.comp.repo.SessionRepo;
 import com.example.comp.repo.TestCasesRepo;
+import com.example.comp.repo.UserStatsRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -26,8 +28,11 @@ public class SubmitService {
     private final SessionRepo sessionRepo;
     private final CurrentUser currentUser;
     private final TestCasesRepo testCasesRepo;
-
+    private final UserStatsRepo userStatsRepo;
+    private final BattleEventPublisher battleEventPublisher;
     public SubmitService(SessionRepo sessionRepo, CurrentUser currentUser, TestCasesRepo testCasesRepo,
+                         UserStatsRepo userStatsRepo,
+                         BattleEventPublisher battleEventPublisher,
                          @org.springframework.beans.factory.annotation.Value("${judge.api.url:http://localhost:3001}") String judgeApiUrl) {
         this.client = WebClient.builder()
                 .baseUrl(judgeApiUrl)
@@ -35,13 +40,16 @@ public class SubmitService {
         this.sessionRepo = sessionRepo;
         this.testCasesRepo = testCasesRepo;
         this.currentUser = currentUser;
+        this.userStatsRepo = userStatsRepo;
+        this.battleEventPublisher = battleEventPublisher;
     }
 
     public OperationStatusResponse submitCode(SubmitRequest request) {
 
         OperationStatusResponse res = new OperationStatusResponse();
-
-        Session session = sessionRepo.findByToken(request.getToken());
+        int userId = currentUser.get().getId();
+        Session session  = sessionRepo.findSessionsForUser(userId);
+//        Session session = sessionRepo.findByToken(request.getToken());
         if (session == null) {
             res.setStatus("failure");
             res.setMessage("Session does not exist");
@@ -68,7 +76,7 @@ public class SubmitService {
         }
 
         SubmitAPI submission = Mapper.SubmitRequestToAPI(request);
-        List<TestCases> tc = testCasesRepo.findByQuestionId(request.getQuestion().getId());
+        List<TestCases> tc = testCasesRepo.findByQuestionId(session.getQuestion().getId());
         if (tc == null || tc.isEmpty()) {
             res.setStatus("failure");
             res.setMessage("No test cases found for question");
@@ -86,10 +94,15 @@ public class SubmitService {
             return res;
         }
 
+
         if ("Accepted".equalsIgnoreCase(result.getStatus())) {
             session.setWho_won(user);
             session.setStatus(Status.STATUS_COMPLETED);
             sessionRepo.save(session);
+
+            //publish for leaderboard things
+            battleEventPublisher.publishBattleFinished(session.getId());
+
             res.setStatus("success");
             res.setMessage("Correct answer. You won the battle");
             return res;
