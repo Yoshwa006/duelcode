@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+:root {
+  font-family: verdana, arial, sans-serif;
+  line-height: 1.5;
+  font-size: 14px;
+  color: #222;
+  background-color: #e4e4e4;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #e4e4e4;
+}
+
+/* Base minimal container */
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  background: #ffffff;
+  min-height: 100vh;
+  padding: 0 15px;
+  border-left: 1px solid #b9b9b9;
+  border-right: 1px solid #b9b9b9;
+}
+
+/* Links */
+a {
+  color: #0055BB;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Standard tabular data */
+table.cf-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  border: 1px solid #b9b9b9;
+}
+
+table.cf-table th {
+  background-color: #e1e1e1;
+  padding: 5px;
+  border: 1px solid #b9b9b9;
+  font-weight: bold;
+  text-align: left;
+}
+
+table.cf-table td {
+  padding: 5px;
+  border: 1px solid #b9b9b9;
+}
+
+table.cf-table tr:nth-child(even) {
+  background-color: #f8f8f8;
+}
+
+/* Buttons and Inputs */
+input[type="text"], input[type="password"], input[type="email"] {
+  border: 1px solid #a0a0a0;
+  padding: 3px 5px;
+  font-family: inherit;
+}
+
+button, .cf-btn {
+  background-color: #e1e1e1;
+  border: 1px solid #a0a0a0;
+  padding: 3px 10px;
+  cursor: pointer;
+  color: #000;
+  font-family: inherit;
+  font-weight: normal;
+}
+button:hover, .cf-btn:hover {
+  background-color: #d1d1d1;
+}
+
+/* Code Output / Pre blocks */
+.monospaced-block {
+  font-family: "Courier New", Courier, monospace;
+  background-color: #efefef;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 5px 0;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+/* Utility layout panels */
+.panel {
+  border: 1px solid #b9b9b9;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.panel-title {
+  background-color: #e1e1e1;
+  color: #111;
+  padding: 5px 10px;
+  font-weight: bold;
+  border-bottom: 1px solid #b9b9b9;
+}
+
+.panel-content {
+  padding: 15px;
+  background: #fff;
+}

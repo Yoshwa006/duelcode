@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: comp-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/compdb
+      SPRING_DATASOURCE_USERNAME: compuser
+      SPRING_DATASOURCE_PASSWORD: comppass
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8
+    container_name: comp-db
+    environment:
+      MYSQL_DATABASE: compdb
+      MYSQL_USER: compuser
+      MYSQL_PASSWORD: comppass
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - mysqldata:/var/lib/mysql
+    ports:
+      - "3306:3306"   # optional
+
+volumes:
+  mysqldata:
+
