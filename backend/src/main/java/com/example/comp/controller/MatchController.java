@@ -12,16 +12,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
-public class MainController {
+public class MatchController {
 
     @Autowired private JudgeService judgeService;
     @Autowired private SubmitService submitService;
     @Autowired private SessionService sessionService;
-    @Autowired private UserStatsRepo userStatsRepo;
 
     @PostMapping("/generate")
     public String generate(@RequestBody GenerateRequest request) {
@@ -70,11 +68,6 @@ public class MainController {
     @PostMapping("/search")
     public List<SessionResponseDTO> searchSessions(@RequestBody SessionSearchRequestDTO requestDTO){
         return sessionService.searchSessions(requestDTO);
-    }
-
-    @GetMapping("/leaderboard")
-    public List<UserStats> leaderboard() {
-        return userStatsRepo.findTop100ByOrderByEloRatingDesc();
     }
 
 }
