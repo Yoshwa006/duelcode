@@ -16,4 +16,5 @@ public class QuestionDTO implements Serializable {
     private String difficulty;
     private String stdIn;
     private String expectedOutput;
+    private String tags;
 }
