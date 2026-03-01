@@ -1,12 +1,12 @@
 package com.example.comp.service;
 
 import com.example.comp.enums.EloResult;
-import com.example.comp.model.*;
+import com.example.comp.model.Session;
+import com.example.comp.model.UserStats;
+import com.example.comp.model.Users;
 import com.example.comp.repo.UserStatsRepo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 public class LeaderboardService {
