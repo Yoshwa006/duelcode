@@ -8,10 +8,8 @@ import org.springframework.cache.annotation.EnableCaching;
 @SpringBootApplication
 public class CompApplication {
 
-
     public static void main(String[] args) {
         SpringApplication.run(CompApplication.class, args);
 
     }
-
 }
