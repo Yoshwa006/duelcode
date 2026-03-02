@@ -29,12 +29,15 @@ public class JudgeService {
     private final SessionRepo sessionRepo;
     private final QuestionRepo questionRepo;
     private final CurrentUser currentUser;
+    private final ChatMessagingService chatMessagingService;
 
     @Autowired
-    public JudgeService(SessionRepo sessionRepo, QuestionRepo questionRepo, CurrentUser currentUser) {
+    public JudgeService(SessionRepo sessionRepo, QuestionRepo questionRepo, CurrentUser currentUser,
+                        ChatMessagingService chatMessagingService) {
         this.sessionRepo = sessionRepo;
         this.questionRepo = questionRepo;
         this.currentUser = currentUser;
+        this.chatMessagingService = chatMessagingService;
     }
 
     /**
@@ -123,6 +126,7 @@ public class JudgeService {
         session.setJoinedBy(user);
         session.setStatus(Status.STATUS_PLAYING);
         sessionRepo.save(session);
+        chatMessagingService.notifyMatchStarted(session);
 
         log.info("User [{}] successfully joined session [{}]", user.getId(), session.getId());
         return true;
