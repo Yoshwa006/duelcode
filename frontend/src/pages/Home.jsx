@@ -25,19 +25,6 @@ function Home() {
     fetchData();
   }, []);
 
-  const getDifficultyBg = (difficulty) => {
-    switch (difficulty) {
-      case "Easy":
-        return "text-green-600 bg-green-50 border border-green-200";
-      case "Medium":
-        return "text-orange-600 bg-orange-50 border border-orange-200";
-      case "Hard":
-        return "text-red-600 bg-red-50 border border-red-200";
-      default:
-        return "text-gray-600 bg-gray-50 border border-gray-200";
-    }
-  };
-
   const clearVariables = () => {
     const jwt = localStorage.getItem("jwt");
     localStorage.clear();
@@ -52,14 +39,14 @@ function Home() {
 
     try {
       const res = await enterToken({ token });
-      setToken("");
-      if (res !== -1) {
-        navigate(`/${res}`);
+      if (res != null) {
+        navigate(`/match/${token}`);
       } else {
         setError("Invalid key or session already full.");
       }
     } catch {
       setError("Error submitting key.");
+      setToken("");
     }
   };
 

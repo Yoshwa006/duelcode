@@ -11,10 +11,11 @@ import java.util.UUID;
 @Repository
 public interface SessionRepo extends JpaRepository<Session, UUID> {
 
-
     @Query("SELECT s.joinedBy FROM Session s WHERE s.token = :token")
     Integer findJoinedByByToken(@Param("token") String token);
+
     Session findByToken(String token);
+
     @Query("SELECT s FROM Session s WHERE s.createdBy.id = :userId OR s.joinedBy.id = :userId")
     Session findByUserId(@Param("userId") Integer userId);
 
@@ -23,14 +24,13 @@ public interface SessionRepo extends JpaRepository<Session, UUID> {
     Session findTopByJoinedByIsNullOrderByCreatedAtDesc();
 
     @Query("""
-    SELECT s
-    FROM Session s
-    WHERE s.createdBy.id = :userId
-       OR s.joinedBy.id = :userId
-       and s.status = 'STATUS_PLAYING'
-    ORDER BY s.createdAt DESC
-    limit 1
-""")
+                SELECT s
+                FROM Session s
+                WHERE (s.createdBy.id = :userId OR s.joinedBy.id = :userId)
+                  AND s.status = 'STATUS_PLAYING'
+                ORDER BY s.createdAt DESC
+                limit 1
+            """)
     Session findSessionsForUser(@Param("userId") int userId);
 
 }

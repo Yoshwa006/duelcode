@@ -36,6 +36,10 @@ public class Comment {
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private Users author;
+
     // Self reference (parent comment)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")

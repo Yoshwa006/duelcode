@@ -37,7 +37,15 @@ public class MatchResult {
         MatchResult r = new MatchResult();
         r.setSessionId(session.getId());
         r.setWinner(session.getWho_won());
-        r.setLoser(null); // fill if needed
+
+        Users loser = null;
+        if (session.getWho_won() != null) {
+            loser = session.getCreatedBy().getId() == session.getWho_won().getId()
+                    ? session.getJoinedBy()
+                    : session.getCreatedBy();
+        }
+        r.setLoser(loser);
+
         r.setBattleType(session.getBattleType());
         r.setScoreAwarded(session.getQuestion().getScore());
         r.setFinishedAt(Instant.now());

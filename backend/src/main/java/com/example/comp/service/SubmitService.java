@@ -14,6 +14,7 @@ import com.example.comp.model.Users;
 import com.example.comp.repo.SessionRepo;
 import com.example.comp.repo.TestCasesRepo;
 import com.example.comp.repo.UserStatsRepo;
+import com.example.comp.dto.chat.ChatMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -30,10 +31,13 @@ public class SubmitService {
     private final TestCasesRepo testCasesRepo;
     private final UserStatsRepo userStatsRepo;
     private final BattleEventPublisher battleEventPublisher;
+    private final ChatMessagingService chatMessagingService;
+
     public SubmitService(SessionRepo sessionRepo, CurrentUser currentUser, TestCasesRepo testCasesRepo,
-                         UserStatsRepo userStatsRepo,
-                         BattleEventPublisher battleEventPublisher,
-                         @org.springframework.beans.factory.annotation.Value("${judge.api.url:http://localhost:3001}") String judgeApiUrl) {
+            UserStatsRepo userStatsRepo,
+            BattleEventPublisher battleEventPublisher,
+            ChatMessagingService chatMessagingService,
+            @org.springframework.beans.factory.annotation.Value("${judge.api.url:http://localhost:3001}") String judgeApiUrl) {
         this.client = WebClient.builder()
                 .baseUrl(judgeApiUrl)
                 .build();
@@ -42,14 +46,15 @@ public class SubmitService {
         this.currentUser = currentUser;
         this.userStatsRepo = userStatsRepo;
         this.battleEventPublisher = battleEventPublisher;
+        this.chatMessagingService = chatMessagingService;
     }
 
     public OperationStatusResponse submitCode(SubmitRequest request) {
 
         OperationStatusResponse res = new OperationStatusResponse();
         int userId = currentUser.get().getId();
-        Session session  = sessionRepo.findSessionsForUser(userId);
-//        Session session = sessionRepo.findByToken(request.getToken());
+        Session session = sessionRepo.findSessionsForUser(userId);
+        // Session session = sessionRepo.findByToken(request.getToken());
         if (session == null) {
             res.setStatus("failure");
             res.setMessage("Session does not exist");
@@ -94,14 +99,20 @@ public class SubmitService {
             return res;
         }
 
-
         if ("Accepted".equalsIgnoreCase(result.getStatus())) {
             session.setWho_won(user);
             session.setStatus(Status.STATUS_COMPLETED);
             sessionRepo.save(session);
 
-            //publish for leaderboard things
+            // publish for leaderboard things
             battleEventPublisher.publishBattleFinished(session.getId());
+
+            // Notify over websocket
+            ChatMessage sysMsg = new ChatMessage();
+            sysMsg.setType("SYSTEM");
+            sysMsg.setContent("User " + user.getUsername() + " solved the problem and won the match!");
+            sysMsg.setSenderId(user.getId());
+            chatMessagingService.sendMatchMessage(session.getToken(), sysMsg);
 
             res.setStatus("success");
             res.setMessage("Correct answer. You won the battle");

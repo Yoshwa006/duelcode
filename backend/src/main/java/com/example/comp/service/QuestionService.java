@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import com.example.comp.component.CurrentUser;
 
 @Slf4j
 @Service
@@ -30,7 +31,7 @@ public class QuestionService {
     private final QuestionRepo questionRepo;
     private final CommentRepository commentRepository;
     private final RedisTemplate<String, Object> redis;
-
+    private final CurrentUser currentUser;
 
     @Cacheable(value = "questions::all")
     public List<QuestionDTO> getAllQuestions() {
@@ -94,7 +95,6 @@ public class QuestionService {
         redis.delete("question::" + id);
     }
 
-
     @Transactional
     @CacheEvict(value = "questions::all", allEntries = true)
     public List<QuestionDTO> bulkCreate(List<QuestionDTO> dtos) {
@@ -125,7 +125,6 @@ public class QuestionService {
         ids.forEach(id -> redis.delete("question::" + id));
     }
 
-
     @Transactional
     public CommentResponse create(UUID questionId, CreateCommentRequest request) {
 
@@ -134,6 +133,7 @@ public class QuestionService {
         Comment comment = new Comment();
         comment.setContent(request.content());
         comment.setQuestion(question);
+        comment.setAuthor(currentUser.get());
 
         if (request.parentId() != null) {
 
@@ -154,8 +154,7 @@ public class QuestionService {
 
     public Page<CommentResponse> getComments(UUID questionId, Pageable pageable) {
 
-        Page<Comment> roots =
-                commentRepository.findByQuestionIdAndParentIsNull(questionId, pageable);
+        Page<Comment> roots = commentRepository.findByQuestionIdAndParentIsNull(questionId, pageable);
 
         return roots.map(this::mapToResponseWithReplies);
     }
@@ -229,13 +228,14 @@ public class QuestionService {
     }
 
     private CommentResponse mapToResponse(Comment comment) {
+        String authorName = comment.getAuthor() != null ? comment.getAuthor().getUsername() : "Unknown";
         return new CommentResponse(
                 comment.getId(),
                 comment.getContent(),
+                authorName,
                 comment.getParent() != null ? comment.getParent().getId() : null,
                 comment.getCreatedAt(),
-                List.of()
-        );
+                List.of());
     }
 
     private CommentResponse mapToResponseWithReplies(Comment comment) {
@@ -245,12 +245,13 @@ public class QuestionService {
                 .map(this::mapToResponseWithReplies)
                 .collect(Collectors.toList());
 
+        String authorName = comment.getAuthor() != null ? comment.getAuthor().getUsername() : "Unknown";
         return new CommentResponse(
                 comment.getId(),
                 comment.getContent(),
+                authorName,
                 comment.getParent() != null ? comment.getParent().getId() : null,
                 comment.getCreatedAt(),
-                replies
-        );
+                replies);
     }
 }

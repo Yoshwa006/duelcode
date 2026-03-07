@@ -1,16 +1,26 @@
 package com.example.comp.model;
 
+import java.time.Instant;
+import java.util.UUID;
 
 import com.example.comp.enums.BattleType;
 import com.example.comp.enums.Status;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Entity
 @AllArgsConstructor
@@ -21,7 +31,6 @@ import java.util.UUID;
 @Table(name = "session")
 public class Session {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -31,6 +40,7 @@ public class Session {
     private Users createdBy;
 
     private Instant createdAt;
+    private Instant startedAt;
 
     @Column(nullable = false, unique = true)
     private String token;
@@ -58,7 +68,7 @@ public class Session {
         this.token = token;
         this.createdBy = createdBy;
         this.question = question;
-        this.createdAt=Instant.now();
+        this.createdAt = Instant.now();
         this.status = Status.STATUS_ACTIVE;
     }
 

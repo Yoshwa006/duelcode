@@ -5,13 +5,18 @@ import jakarta.persistence.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
-public class Question {
+public class Question implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Enumerated()
@@ -38,9 +43,8 @@ public class Question {
     }
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<TestCases> testCases;
-
-
 
     public void setDifficulty(Difficulty difficulty) {
         this.difficulty = difficulty;
@@ -52,6 +56,7 @@ public class Question {
     private void syncScore() {
         this.score = (this.difficulty != null) ? this.difficulty.getScore() : 0;
     }
+
     public Difficulty getDifficulty() {
         return difficulty;
     }
@@ -103,6 +108,5 @@ public class Question {
     public void setScore(int score) {
         this.score = score;
     }
-
 
 }

@@ -25,24 +25,24 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@jakarta.validation.Valid @RequestBody AuthRequest authRequest) {
+    public ResponseEntity<?> login(@jakarta.validation.Valid @RequestBody AuthRequest authRequest) {
         AuthResponse response = authService.login(authRequest);
 
         if (!response.getValid()) {
             return ResponseEntity.status(401).body("Invalid email or password");
         }
 
-        return ResponseEntity.ok(response.getToken());
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/forget-password")
-    public String forgetPassword(String email){
+    public String forgetPassword(String email) {
         return authService.forgetPassword(email);
     }
 
     @PostMapping("/reset-password")
     public boolean resetPassword(@RequestParam String token,
-                                 @RequestBody String newPassword){
+            @RequestBody String newPassword) {
         return authService.resetPassword(token, newPassword);
     }
 }

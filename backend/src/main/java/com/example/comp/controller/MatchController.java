@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.comp.repo.SessionRepo;
+import com.example.comp.model.Session;
 
 import java.util.List;
 
@@ -17,9 +19,23 @@ import java.util.List;
 @RequestMapping("/api")
 public class MatchController {
 
-    @Autowired private JudgeService judgeService;
-    @Autowired private SubmitService submitService;
-    @Autowired private SessionService sessionService;
+    @Autowired
+    private JudgeService judgeService;
+    @Autowired
+    private SubmitService submitService;
+    @Autowired
+    private SessionService sessionService;
+    @Autowired
+    private SessionRepo sessionRepo;
+
+    @GetMapping("/match/{token}")
+    public ResponseEntity<Session> getMatchByToken(@PathVariable String token) {
+        Session session = sessionRepo.findByToken(token);
+        if (session == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(session);
+    }
 
     @PostMapping("/generate")
     public String generate(@RequestBody GenerateRequest request) {
@@ -66,7 +82,7 @@ public class MatchController {
     }
 
     @PostMapping("/search")
-    public List<SessionResponseDTO> searchSessions(@RequestBody SessionSearchRequestDTO requestDTO){
+    public List<SessionResponseDTO> searchSessions(@RequestBody SessionSearchRequestDTO requestDTO) {
         return sessionService.searchSessions(requestDTO);
     }
 
