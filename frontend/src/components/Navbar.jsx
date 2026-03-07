@@ -26,6 +26,7 @@ function Navbar() {
                     <div style={{ display: 'flex', gap: '15px' }}>
                         <Link to="/">Problems</Link>
                         <Link to="/">Leaderboard</Link>
+                        {isLoggedIn && <Link to="/create-problem" style={{ fontWeight: '500', color: '#0055BB' }}>Create Problem</Link>}
                     </div>
                 </div>
 

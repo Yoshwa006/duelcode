@@ -43,12 +43,17 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll());
+                        // Allow login/register without a token
+                        .requestMatchers("/api/auth/**").permitAll()
+                        // Everything else requires a valid user
+                        .anyRequest().authenticated()
+                )
+                // 1. Tell Spring to use your JWT Filter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

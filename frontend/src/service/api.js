@@ -20,6 +20,20 @@ export default async function get() {
     }
 }
 
+export const createQuestion = async (questionData) => {
+    const jwt = localStorage.getItem("jwt");
+    try {
+        const res = await axios.post("http://localhost:8080/api/questions", questionData, {
+            headers: {
+                Authorization: `Bearer ${jwt}`
+            }
+        });
+        return res.data;
+    } catch (error) {
+        console.error("Failed to create question:", error.message);
+        throw error;
+    }
+};
 
 export async function getSingle({ id }) {
     try {

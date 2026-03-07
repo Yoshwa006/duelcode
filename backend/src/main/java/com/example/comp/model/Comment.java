@@ -40,7 +40,6 @@ public class Comment {
     @JoinColumn(name = "author_id", nullable = false)
     private Users author;
 
-    // Self reference (parent comment)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Comment parent;
@@ -63,5 +62,35 @@ public class Comment {
         updatedAt = LocalDateTime.now();
     }
 
-    // getters and setters
+    public void setParent(Comment parent) {
+        this.parent = parent;
+    }
+
+    public Comment getParent() {
+        return parent;
+    }
+    
+    public void setQuestion(Question question) {
+        this.question = question;
+    }
+
+    public Question getQuestion() {
+        return question;
+    }
+
+    public List<Comment> getReplies() {
+        return replies;
+    }
+
+    public void setReplies(List<Comment> replies) {
+        this.replies = replies;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
 }

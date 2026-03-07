@@ -4,5 +4,9 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()
-  ,tailwindcss()],
+    , tailwindcss()],
+  define: {
+    // This provides the 'global' variable expected by some legacy libraries
+    global: 'window',
+  },
 })
