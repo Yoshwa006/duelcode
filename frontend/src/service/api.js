@@ -1,9 +1,18 @@
 // getData.js
 import axios from 'axios';
 
+// Add interceptor to automatically attach JWT to requests
+axios.interceptors.request.use((config) => {
+    const token = localStorage.getItem("jwt");
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, (error) => Promise.reject(error));
+
 export default async function get() {
     try {
-        const response = await axios.get("http://localhost:8080/api/question");
+        const response = await axios.get("http://localhost:8080/api/questions");
         return response.data;
     } catch (error) {
         console.error("Failed to fetch:", error.message);
@@ -14,7 +23,7 @@ export default async function get() {
 
 export async function getSingle({ id }) {
     try {
-        const res = await axios.get(`http://localhost:8080/api/${id}`);
+        const res = await axios.get(`http://localhost:8080/api/questions/${id}`);
         console.log(res.data);
         return res.data;
     } catch (error) {
@@ -24,13 +33,12 @@ export async function getSingle({ id }) {
 }
 
 export async function generateKey({ questionId }) {
-    const jwt = localStorage.getItem("jwt");
     const body = {
-        questionId,
-        jwt
+        questionId
     };
 
     try {
+        // Backend expects generating key only, it knows who we are via JWT
         const res = await axios.post(`http://localhost:8080/api/generate`, body);
         return res.data;
     } catch (error) {
@@ -38,20 +46,16 @@ export async function generateKey({ questionId }) {
         throw error;
     }
 }
+
 export async function enterToken({ token }) {
     console.log("Submitting token:", token);
-    const jwt = localStorage.getItem("jwt");
-
-    const body = {
-        jwt,
-        token
-    };
 
     try {
-        const response = await axios.post(`http://localhost:8080/api/enter`, body);
+        // Updated backend URL for joining a match by key
+        const response = await axios.get(`http://localhost:8080/api/join-key?key=${token}`);
         const res = response.data;
 
-        if (res !== -1) {
+        if (res != null) {
             localStorage.setItem("q", res);
         }
         localStorage.setItem("key", token);
@@ -63,22 +67,29 @@ export async function enterToken({ token }) {
 }
 
 export async function validateUser({ token }) {
-    const body = {
-        token
-    }
+    // Left empty for now, use JWT token validation directly in requests instead
+    return true;
+}
 
+export async function getComments(questionId, page = 0, size = 10) {
     try {
-        const response = await axios.post(`http://localhost:8080/api/auth/validate`, body);
-        const res = response.data;
-
-        if (res == false) {
-            return false;
-        }
-
-        return true;
+        const res = await axios.get(`http://localhost:8080/api/questions/${questionId}/comments?page=${page}&size=${size}`);
+        return res.data;
+    } catch (error) {
+        console.error("Failed to fetch comments", error);
+        throw error;
     }
-    catch (error) {
-        console.log("Some error has happend in validating the user !", token)
+}
+
+export async function createComment(questionId, { content, parentId }) {
+    try {
+        const res = await axios.post(`http://localhost:8080/api/questions/${questionId}/comments`, {
+            content,
+            parentId
+        });
+        return res.data;
+    } catch (error) {
+        console.error("Failed to create comment", error);
         throw error;
     }
 }
@@ -111,40 +122,24 @@ export async function login({ email, password }) {
     }
 }
 
-export const submitCode = async ({ language_id, source_code, stdin, expected_output, jwtToken, token }) => {
+export async function getSessionByToken(token) {
+    try {
+        const res = await axios.get(`http://localhost:8080/api/match/${token}`);
+        return res.data;
+    } catch (error) {
+        console.error("Failed to fetch session info", error);
+        throw error;
+    }
+}
+
+export const submitCode = async ({ language_id, source_code, stdin, expected_output }) => {
     const res = await axios.post(`http://localhost:8080/api/submit`, {
         language_id,
         source_code,
         stdin,
-        expected_output,
-        jwtToken,
-        token
+        expected_output
+        // We do not send jwtToken manually because it's in the Axios interceptor
     });
     return res.data;
 };
-
-
-export function polling() {
-    return new Promise((resolve, reject) => {
-        const interval = setInterval(async () => {
-            console.log("polling...");
-            const ctoken = localStorage.getItem("ctoken");
-            console.log(ctoken);
-            try {
-                const res = await axios.get(
-                    `http://localhost:8080/api/poll/${ctoken}`,
-                );
-
-                if (res.data === true) {
-                    clearInterval(interval);
-                    resolve();
-                }
-            } catch (error) {
-                console.error("Polling failed:", error);
-                clearInterval(interval);
-                reject(error);
-            }
-        }, 1000);
-    });
-}
 

@@ -45,9 +45,7 @@ function TextEditor() {
                 language_id: 62,
                 source_code: code,
                 stdin: problem?.stdin || "",
-                expected_output: problem?.expectedOutput || "",
-                jwtToken: localStorage.getItem("token"),
-                token: localStorage.getItem("ctoken")
+                expected_output: problem?.expectedOutput || ""
             };
 
             const response = await submitCode(payload);

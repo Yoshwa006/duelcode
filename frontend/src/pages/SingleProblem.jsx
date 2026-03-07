@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { generateKey, getSingle, polling } from "../service/api.js";
+import { generateKey, getSingle } from "../service/api.js";
 import Navbar from "../components/Navbar.jsx";
+import CommentList from "../components/CommentList.jsx";
 
 function SingleProblem() {
     const [problem, setProblem] = useState(null);
@@ -39,21 +40,22 @@ function SingleProblem() {
     //         }
     //     }
     // })
-    const hnadleGenerateKey = async () => {
+    const handleGenerateKey = async () => {
         try {
             setWaiting(true);
 
             const generated_key = await generateKey({ questionId: id });   //getting key for a user
 
-            const key = generated_key.token || JSON.stringify(generated_key);
-            localStorage.setItem("key", key);
+            const token = generated_key.token || (typeof generated_key === 'string' ? generated_key : JSON.stringify(generated_key));
+            localStorage.setItem("key", token);
 
-            setKey(key);
+            setKey(token);
             setShowKey(true);
-            await polling();
             setWaiting(false);
             setBattleStarted(true);
-            navigate(`/${id}`);
+
+            // Go straight to match page, which will handle websocket waiting
+            navigate(`/match/${token}`);
         } catch (err) {
             setError(err.message || 'Failed to generate token');
             setWaiting(false);
@@ -141,7 +143,7 @@ function SingleProblem() {
                             <button className="cf-btn">Submit Code</button>
                         </Link>
 
-                        <button onClick={hnadleGenerateKey} className="cf-btn">
+                        <button onClick={handleGenerateKey} className="cf-btn">
                             Create 1v1 Battle
                         </button>
 
@@ -180,6 +182,14 @@ function SingleProblem() {
                         Waiting for opponent to join...
                     </div>
                 )}
+
+                <hr className="my-8" />
+
+                <div className="panel">
+                    <div className="panel-content">
+                        <CommentList questionId={id} />
+                    </div>
+                </div>
             </div>
         </div>
     );

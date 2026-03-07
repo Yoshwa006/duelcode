@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
 import java.security.SecureRandom;
 import java.util.UUID;
 
@@ -33,7 +36,7 @@ public class JudgeService {
 
     @Autowired
     public JudgeService(SessionRepo sessionRepo, QuestionRepo questionRepo, CurrentUser currentUser,
-                        ChatMessagingService chatMessagingService) {
+            ChatMessagingService chatMessagingService) {
         this.sessionRepo = sessionRepo;
         this.questionRepo = questionRepo;
         this.currentUser = currentUser;
@@ -42,6 +45,7 @@ public class JudgeService {
 
     /**
      * Generates a unique token for a session.
+     * 
      * @return unique session token
      */
     private String generateUniqueToken() {
@@ -63,6 +67,7 @@ public class JudgeService {
 
     /**
      * Generates and stores a new session key for the specified question ID.
+     * 
      * @param quesId the question UUID
      * @return generated session token
      */
@@ -92,6 +97,7 @@ public class JudgeService {
     /**
      * Attempt to join the given session for the currently authenticated user.
      * Handles session state and user logic.
+     * 
      * @param session The session to join.
      * @return true if joined successfully, false otherwise.
      */
@@ -114,17 +120,18 @@ public class JudgeService {
 
         // Prevent the session creator from joining their own session
         if (session.getCreatedBy() != null && session.getCreatedBy().getId() == (user.getId())) {
-            log.debug("joinSession failed: User [{}] cannot join their own session [{}].", user.getId(), session.getId());
+            log.debug("joinSession failed: User [{}] cannot join their own session [{}].", user.getId(),
+                    session.getId());
             return false;
         }
-        if(isFriendly){
+        if (isFriendly) {
             session.setBattleType(BattleType.FRIENDLY);
-        }
-        else{
+        } else {
             session.setBattleType(BattleType.RANKED);
         }
         session.setJoinedBy(user);
         session.setStatus(Status.STATUS_PLAYING);
+        session.setStartedAt(Instant.now());
         sessionRepo.save(session);
         chatMessagingService.notifyMatchStarted(session);
 
@@ -134,6 +141,7 @@ public class JudgeService {
 
     /**
      * Find and join the latest available session for the user.
+     * 
      * @return true if joined, false otherwise.
      */
     @Transactional
@@ -141,7 +149,8 @@ public class JudgeService {
         Session session = sessionRepo.findTopByJoinedByIsNullOrderByCreatedAtDesc();
         boolean joined = joinSession(session, false);
         if (!joined) {
-            log.info("No available sessions to join for user [{}].", (currentUser.get() != null ? currentUser.get().getId() : null));
+            log.info("No available sessions to join for user [{}].",
+                    (currentUser.get() != null ? currentUser.get().getId() : null));
         }
         return joined;
     }
@@ -149,6 +158,7 @@ public class JudgeService {
     /**
      * Attempt to enter and join a session by token string.
      * Returns a well-formed OperationStatusResponse for API consumption.
+     * 
      * @param token The session token to enter.
      * @return OperationStatusResponse
      */
@@ -178,14 +188,16 @@ public class JudgeService {
             res.setStatus("FAILED");
             res.setMessage("Failed to join session. It may already have been joined or you are not allowed to join.");
             res.setErrorCode(400);
-            log.warn("Failed to join session with token [{}] for user [{}]", token, (currentUser.get() != null ? currentUser.get().getId() : null));
+            log.warn("Failed to join session with token [{}] for user [{}]", token,
+                    (currentUser.get() != null ? currentUser.get().getId() : null));
             return res;
         }
 
         res.setStatus("SUCCESS");
         res.setMessage("Joined session successfully.");
         res.setErrorCode(0);
-        log.info("User [{}] joined session successfully with token [{}]", (currentUser.get() != null ? currentUser.get().getId() : null), token);
+        log.info("User [{}] joined session successfully with token [{}]",
+                (currentUser.get() != null ? currentUser.get().getId() : null), token);
         return res;
     }
 }

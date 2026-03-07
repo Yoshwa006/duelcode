@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import CommentForm from './CommentForm';
 
 const CommentItem = ({ comment, onReply }) => {
     const [showReplyForm, setShowReplyForm] = useState(false);

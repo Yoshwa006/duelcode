@@ -38,8 +38,7 @@ public class LeaderboardService {
         // elo update
         EloResult elo = eloService.calculate(
                 winnerStats.getEloRating(),
-                loserStats.getEloRating()
-        );
+                loserStats.getEloRating());
 
         winnerStats.setEloRating(elo.winner());
         loserStats.setEloRating(elo.loser());
@@ -49,7 +48,7 @@ public class LeaderboardService {
     }
 
     public Users getOpponent(Session session, Users current) {
-        return session.getCreatedBy().equals(current)
+        return session.getCreatedBy().getId() == current.getId()
                 ? session.getJoinedBy()
                 : session.getCreatedBy();
     }

@@ -23,7 +23,6 @@ public class CustomSessionRepository {
 
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Session> cq = cb.createQuery(Session.class);
-        em.find(Session.class, 1L);
         Root<Session> session = cq.from(Session.class);
 
         Join<Session, Users> creator = session.join("createdBy", JoinType.LEFT);
@@ -36,12 +35,14 @@ public class CustomSessionRepository {
             predicates.add(cb.equal(creator.get("email"), request.getCreatorEmail()));
         }
         if (request.getCreatedUserName() != null && !request.getCreatedUserName().trim().isEmpty()) {
-            predicates.add(cb.equal(creator.get("email"), request.getCreatedUserName())); // Users doesn't have 'name', using email
+            predicates.add(cb.equal(creator.get("email"), request.getCreatedUserName())); // Users doesn't have 'name',
+                                                                                          // using email
         }
         if (request.getJoinedUserName() != null && !request.getJoinedUserName().trim().isEmpty()) {
-            predicates.add(cb.equal(joiner.get("email"), request.getJoinedUserName())); // Users doesn't have 'name', using email
+            predicates.add(cb.equal(joiner.get("email"), request.getJoinedUserName())); // Users doesn't have 'name',
+                                                                                        // using email
         }
-        if(request.getJoinedByEmail() != null && !request.getJoinedByEmail().trim().isEmpty()){
+        if (request.getJoinedByEmail() != null && !request.getJoinedByEmail().trim().isEmpty()) {
             predicates.add(cb.equal(joiner.get("email"), request.getJoinedByEmail()));
         }
         if (request.getDifficulty() != null && !request.getDifficulty().trim().isEmpty()) {
@@ -54,8 +55,7 @@ public class CustomSessionRepository {
             try {
                 predicates.add(cb.greaterThanOrEqualTo(
                         session.get("createdAt"),
-                        Instant.parse(request.getStartDate())
-                ));
+                        Instant.parse(request.getStartDate())));
             } catch (Exception e) {
                 // Invalid date format, skip this predicate
             }
@@ -64,8 +64,7 @@ public class CustomSessionRepository {
             try {
                 predicates.add(cb.lessThanOrEqualTo(
                         session.get("createdAt"),
-                        Instant.parse(request.getEndDate())
-                ));
+                        Instant.parse(request.getEndDate())));
             } catch (Exception e) {
                 // Invalid date format, skip this predicate
             }
@@ -91,4 +90,3 @@ public class CustomSessionRepository {
         return query.getResultList();
     }
 }
-

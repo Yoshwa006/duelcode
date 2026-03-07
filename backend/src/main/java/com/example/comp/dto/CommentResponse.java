@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.UUID;
 
 public record CommentResponse(
-        UUID id,
-        String content,
-        UUID parentId,
-        LocalDateTime createdAt,
-        List<CommentResponse> replies
-) {}
+                UUID id,
+                String content,
+                String authorName,
+                UUID parentId,
+                LocalDateTime createdAt,
+                List<CommentResponse> replies) {
+}
