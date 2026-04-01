@@ -44,9 +44,9 @@ function SingleProblem() {
         try {
             setWaiting(true);
 
-            const generated_key = await generateKey({ questionId: id });   //getting key for a user
-
-            const token = generated_key.token || (typeof generated_key === 'string' ? generated_key : JSON.stringify(generated_key));
+            const generated_key = await generateKey({ questionId: id });
+            
+            const token = typeof generated_key === 'string' ? generated_key : generated_key.token || JSON.stringify(generated_key);
             localStorage.setItem("key", token);
 
             setKey(token);
@@ -54,7 +54,6 @@ function SingleProblem() {
             setWaiting(false);
             setBattleStarted(true);
 
-            // Go straight to match page, which will handle websocket waiting
             navigate(`/match/${token}`);
         } catch (err) {
             setError(err.message || 'Failed to generate token');

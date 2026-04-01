@@ -44,13 +44,16 @@ function TextEditor() {
             const payload = {
                 language_id: 62,
                 source_code: code,
-                stdin: problem?.stdin || "",
-                expected_output: problem?.expectedOutput || ""
             };
 
             const response = await submitCode(payload);
             console.log("API Response:", response);
-            alert("Submitted successfully. Check console for result.");
+            
+            if (response.status === "success") {
+                alert("Correct answer! You won the battle.");
+            } else {
+                alert(`Submission failed: ${response.message || "Wrong answer"}`);
+            }
         } catch (error) {
             console.error("Submission failed:", error);
             alert("Submission failed. Check console for details.");

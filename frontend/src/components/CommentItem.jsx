@@ -18,10 +18,10 @@ const CommentItem = ({ comment, onReply }) => {
             </div>
             {showReplyForm && (
                 <div className="mt-2">
-                    <CommentForm onSubmit={(content) => {
+                    <CommentForm onSubmit={(content, parentId) => {
                         onReply(content, comment.id);
                         setShowReplyForm(false);
-                    }} />
+                    }} isReply={true} parentId={comment.id} />
                 </div>
             )}
             {/* Render nested replies recursively */}

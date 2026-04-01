@@ -47,13 +47,8 @@ export async function getSingle({ id }) {
 }
 
 export async function generateKey({ questionId }) {
-    const body = {
-        questionId
-    };
-
     try {
-        // Backend expects generating key only, it knows who we are via JWT
-        const res = await axios.post(`http://localhost:8080/api/generate`, body);
+        const res = await axios.post(`http://localhost:8080/api/generate`, { questionId });
         return res.data;
     } catch (error) {
         console.error('Failed to generate token:', error);
@@ -65,15 +60,16 @@ export async function enterToken({ token }) {
     console.log("Submitting token:", token);
 
     try {
-        // Updated backend URL for joining a match by key
         const response = await axios.get(`http://localhost:8080/api/join-key?key=${token}`);
         const res = response.data;
 
-        if (res != null) {
-            localStorage.setItem("q", res);
+        if (res.status === "SUCCESS" || res.errorCode === 0) {
+            localStorage.setItem("key", token);
+            localStorage.setItem("q", token);
+            return res;
+        } else {
+            throw new Error(res.message || "Failed to join session");
         }
-        localStorage.setItem("key", token);
-        return res;
     } catch (error) {
         console.error("Failed to enter token:", error);
         throw error;

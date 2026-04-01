@@ -39,14 +39,13 @@ function Home() {
 
     try {
       const res = await enterToken({ token });
-      if (res != null) {
+      if (res.status === "SUCCESS" || res.errorCode === 0) {
         navigate(`/match/${token}`);
       } else {
-        setError("Invalid key or session already full.");
+        setError(res.message || "Invalid key or session already full.");
       }
-    } catch {
-      setError("Error submitting key.");
-      setToken("");
+    } catch (err) {
+      setError(err.message || "Error submitting key.");
     }
   };
 

@@ -29,12 +29,34 @@ public class MatchController {
     private SessionRepo sessionRepo;
 
     @GetMapping("/match/{token}")
-    public ResponseEntity<Session> getMatchByToken(@PathVariable String token) {
+    public ResponseEntity<?> getMatchByToken(@PathVariable String token) {
         Session session = sessionRepo.findByToken(token);
         if (session == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(session);
+        
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("token", session.getToken());
+        response.put("status", session.getStatus());
+        if (session.getCreatedBy() != null) {
+            response.put("createdBy", session.getCreatedBy().getUsername());
+        }
+        if (session.getJoinedBy() != null) {
+            response.put("joinedBy", session.getJoinedBy().getUsername());
+        }
+        
+        if (session.getQuestion() != null) {
+            java.util.Map<String, Object> questionMap = new java.util.HashMap<>();
+            questionMap.put("id", session.getQuestion().getId());
+            questionMap.put("title", session.getQuestion().getTitle());
+            questionMap.put("description", session.getQuestion().getDescription());
+            questionMap.put("difficulty", session.getQuestion().getDifficulty());
+            questionMap.put("stdIn", session.getQuestion().getStdIn());
+            questionMap.put("expectedOutput", session.getQuestion().getExpectedOutput());
+            response.put("question", questionMap);
+        }
+        
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/generate")

@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 
-const CommentForm = ({ onSubmit }) => {
+const CommentForm = ({ onSubmit, isReply = false, parentId = null }) => {
     const [content, setContent] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!content.trim()) return;
-        await onSubmit(content.trim());
+        
+        if (isReply && parentId) {
+            await onSubmit(content.trim(), parentId);
+        } else {
+            await onSubmit(content.trim(), null);
+        }
         setContent('');
     };
 

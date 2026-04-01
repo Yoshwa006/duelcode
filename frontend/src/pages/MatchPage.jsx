@@ -84,18 +84,14 @@ function MatchPage() {
             setOutput("Running code...\n");
 
             const payload = {
-                language_id: 62, // Java as default
+                language_id: 62,
                 source_code: code,
-                stdin: sessionData?.question?.stdIn || "",
-                expected_output: sessionData?.question?.expectedOutput || "",
             };
 
             const res = await submitCode(payload);
 
-            // Determine result
-            if (res.status?.id === 3) {
-                setOutput(`Accepted! \nTime: ${res.time}s\nMemory: ${res.memory}KB`);
-                // Send accepted notification to chat
+            if (res.status === "success") {
+                setOutput(`${res.message}\n\nYou won the battle!`);
                 if (stompClient) {
                     stompClient.publish({
                         destination: `/app/chat/${token}`,
@@ -103,8 +99,7 @@ function MatchPage() {
                     });
                 }
             } else {
-                let errorMsg = res.compile_output || res.stderr || res.message || (res.status?.description) || "Unknown Error";
-                setOutput(`Failed: ${errorMsg}\n\nExpected Output:\n${payload.expected_output}`);
+                setOutput(`Failed: ${res.message || "Wrong answer"}`);
             }
         } catch (err) {
             setOutput("Submission error: " + (err.message || "Unknown error"));
