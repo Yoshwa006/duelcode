@@ -9,6 +9,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -62,18 +63,28 @@ public class GlobalExceptionHandler {
     public ResponseEntity<OperationStatusResponse> handleAuthenticationException(AuthenticationException ex) {
         OperationStatusResponse response = new OperationStatusResponse();
         response.setStatus("FAILED");
-        response.setMessage("Authentication failed: " + ex.getMessage());
+        response.setMessage("Authentication failed");
         response.setErrorCode(401);
         
         log.warn("Authentication exception: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<OperationStatusResponse> handleResponseStatusException(ResponseStatusException ex) {
+        OperationStatusResponse response = new OperationStatusResponse();
+        response.setStatus("FAILED");
+        response.setMessage(ex.getReason());
+        response.setErrorCode(ex.getStatusCode().value());
+        
+        return ResponseEntity.status(ex.getStatusCode()).body(response);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<OperationStatusResponse> handleRuntimeException(RuntimeException ex) {
         OperationStatusResponse response = new OperationStatusResponse();
         response.setStatus("FAILED");
-        response.setMessage(ex.getMessage());
+        response.setMessage("An internal error occurred");
         response.setErrorCode(500);
         
         log.error("Runtime exception: ", ex);

@@ -7,6 +7,7 @@ import com.example.comp.mapper.Mapper;
 import com.example.comp.model.Users;
 import com.example.comp.repo.PasswordTokenResetRepo;
 import com.example.comp.repo.UserRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class AuthService {
 
@@ -76,38 +78,38 @@ public class AuthService {
     public String forgetPassword(String mail){
         Users users = userRepo.findByEmail(mail);
         if(users == null){
-            System.out.println("Invalid email !");
+            log.warn("Password reset requested for non-existent email: {}", mail);
             return "failed !";
         }
         String token = UUID.randomUUID().toString();
 
         PasswordResetToken passwordResetToken = new PasswordResetToken();
-        passwordResetToken.setId(UUID.randomUUID());
         passwordResetToken.setToken(token);
         passwordResetToken.setUsed(false);
         passwordResetToken.setUser(users);
         passwordResetToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
         passwordTokenResetRepo.save(passwordResetToken);
-        String url = "http://localhost:8080/auth/reset-password?token=" +  token;
 
         emailService.sendMail(
                 users.getEmail(),
-                "Forget password reset link",
-                "http://localhost:8080/auth/reset-password?token=" + token
+                "Password Reset Request",
+                "Your password reset token is: " + token
         );
-        return url;
+        log.info("Password reset token generated for user: {}", users.getEmail());
+        return token;
     }
 
     public boolean resetPassword(String token, String newPassword) {
 
         PasswordResetToken resetToken = passwordTokenResetRepo.findByToken(token);
         if(resetToken == null){
-            System.out.println("Token is invalid or expired !");
+            log.warn("Password reset attempted with invalid token");
             return false;
         }
 
         if (resetToken.isUsed() ||
                 resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            log.warn("Password reset attempted with expired or used token");
             return false;
         }
 
@@ -117,6 +119,7 @@ public class AuthService {
 
         resetToken.setUsed(true);
         passwordTokenResetRepo.save(resetToken);
+        log.info("Password successfully reset for user: {}", user.getEmail());
         return true;
     }
 }

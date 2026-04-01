@@ -2,6 +2,7 @@ package com.example.comp.config;
 
 import com.example.comp.service.CustomUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -29,10 +30,13 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Value("${app.cors.allowed-origins:http://localhost:5173}")
+    private List<String> allowedOrigins;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -47,12 +51,10 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Allow login/register without a token
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Everything else requires a valid user
+                        .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                // 1. Tell Spring to use your JWT Filter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
