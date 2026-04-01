@@ -67,12 +67,12 @@ export default function AuthPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 style={{ width: '100%', boxSizing: 'border-box' }}
                 required
-                minLength={mode === "register" ? 8 : undefined}
+                minLength={mode === "register" ? 6 : undefined}
                 disabled={loading}
               />
-              {mode === "register" && (
+                {mode === "register" && (
                 <div style={{ fontSize: '12px', color: '#666', marginTop: '3px' }}>
-                  Password must be at least 8 characters
+                  Password must be at least 6 characters
                 </div>
               )}
             </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/Navbar.jsx";
-import get, { enterToken } from "../service/api.js";
+import { getQuestions, enterToken } from "../service/api.js";
 
 function Home() {
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ function Home() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await get();
+        const data = await getQuestions();
         setQuestions(data);
       } catch (err) {
         setError(err.message);

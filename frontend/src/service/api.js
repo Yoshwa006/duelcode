@@ -1,54 +1,66 @@
-// getData.js
 import axios from 'axios';
 
-// Add interceptor to automatically attach JWT to requests
-axios.interceptors.request.use((config) => {
-    const token = localStorage.getItem("jwt");
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-}, (error) => Promise.reject(error));
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-export default async function get() {
+const api = axios.create({
+    baseURL: API_BASE_URL,
+});
+
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('jwt');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem('jwt');
+            window.location.href = '/auth';
+        }
+        return Promise.reject(error);
+    }
+);
+
+export async function getQuestions() {
     try {
-        const response = await axios.get("http://localhost:8080/api/questions");
+        const response = await api.get('/api/questions');
         return response.data;
     } catch (error) {
-        console.error("Failed to fetch:", error.message);
+        console.error('Failed to fetch questions:', error.message);
         throw error;
     }
 }
 
 export const createQuestion = async (questionData) => {
-    const jwt = localStorage.getItem("jwt");
     try {
-        const res = await axios.post("http://localhost:8080/api/questions", questionData, {
-            headers: {
-                Authorization: `Bearer ${jwt}`
-            }
-        });
+        const res = await api.post('/api/questions', questionData);
         return res.data;
     } catch (error) {
-        console.error("Failed to create question:", error.message);
+        console.error('Failed to create question:', error.message);
         throw error;
     }
 };
 
-export async function getSingle({ id }) {
+export async function getSingleQuestion(id) {
     try {
-        const res = await axios.get(`http://localhost:8080/api/questions/${id}`);
-        console.log(res.data);
+        const res = await api.get(`/api/questions/${id}`);
         return res.data;
     } catch (error) {
-        console.error("Failed to fetch:", error.message);
+        console.error('Failed to fetch question:', error.message);
         throw error;
     }
 }
 
-export async function generateKey({ questionId }) {
+export async function generateKey(questionId) {
     try {
-        const res = await axios.post(`http://localhost:8080/api/generate`, { questionId });
+        const res = await api.post('/api/generate', { questionId });
         return res.data;
     } catch (error) {
         console.error('Failed to generate token:', error);
@@ -56,100 +68,119 @@ export async function generateKey({ questionId }) {
     }
 }
 
-export async function enterToken({ token }) {
-    console.log("Submitting token:", token);
-
+export async function enterToken(token) {
     try {
-        const response = await axios.get(`http://localhost:8080/api/join-key?key=${token}`);
+        const response = await api.get(`/api/join-key?key=${token}`);
         const res = response.data;
 
-        if (res.status === "SUCCESS" || res.errorCode === 0) {
-            localStorage.setItem("key", token);
-            localStorage.setItem("q", token);
+        if (res.status === 'SUCCESS' || res.errorCode === 0) {
+            localStorage.setItem('sessionToken', token);
             return res;
         } else {
-            throw new Error(res.message || "Failed to join session");
+            throw new Error(res.message || 'Failed to join session');
         }
     } catch (error) {
-        console.error("Failed to enter token:", error);
-        throw error;
-    }
-}
-
-export async function validateUser({ token }) {
-    // Left empty for now, use JWT token validation directly in requests instead
-    return true;
-}
-
-export async function getComments(questionId, page = 0, size = 10) {
-    try {
-        const res = await axios.get(`http://localhost:8080/api/questions/${questionId}/comments?page=${page}&size=${size}`);
-        return res.data;
-    } catch (error) {
-        console.error("Failed to fetch comments", error);
-        throw error;
-    }
-}
-
-export async function createComment(questionId, { content, parentId }) {
-    try {
-        const res = await axios.post(`http://localhost:8080/api/questions/${questionId}/comments`, {
-            content,
-            parentId
-        });
-        return res.data;
-    } catch (error) {
-        console.error("Failed to create comment", error);
-        throw error;
-    }
-}
-
-
-export async function register({ email, password }) {
-    try {
-        const res = await axios.post("http://localhost:8080/api/auth/register", { email, password });
-        return res.data;
-    } catch (error) {
-        console.error("Failed to register:", error.response?.data || error.message);
-        throw error;
-    }
-}
-
-export async function login({ email, password }) {
-    try {
-        const res = await axios.post("http://localhost:8080/api/auth/login", { email, password });
-        const token = res.data?.token;
-
-        if (!token) {
-            throw new Error("Login failed: no token received from server");
-        }
-
-        localStorage.setItem("jwt", token);
-        return token;
-    } catch (error) {
-        console.error("Failed to login:", error.response?.data || error.message);
+        console.error('Failed to enter token:', error);
         throw error;
     }
 }
 
 export async function getSessionByToken(token) {
     try {
-        const res = await axios.get(`http://localhost:8080/api/match/${token}`);
+        const res = await api.get(`/api/match/${token}`);
         return res.data;
     } catch (error) {
-        console.error("Failed to fetch session info", error);
+        console.error('Failed to fetch session info', error);
         throw error;
     }
 }
 
-export const submitCode = async ({ language_id, source_code, stdin, expected_output }) => {
-    const res = await axios.post(`http://localhost:8080/api/submit`, {
+export const submitCode = async ({ language_id, source_code }) => {
+    const res = await api.post('/api/submit', {
         language_id,
         source_code,
-        stdin,
-        expected_output
-        // We do not send jwtToken manually because it's in the Axios interceptor
     });
     return res.data;
 };
 
+export async function getComments(questionId, page = 0, size = 10) {
+    try {
+        const res = await api.get(`/api/questions/${questionId}/comments?page=${page}&size=${size}`);
+        return res.data;
+    } catch (error) {
+        console.error('Failed to fetch comments', error);
+        throw error;
+    }
+}
+
+export async function createComment(questionId, { content, parentId }) {
+    try {
+        const res = await api.post(`/api/questions/${questionId}/comments`, {
+            content,
+            parentId,
+        });
+        return res.data;
+    } catch (error) {
+        console.error('Failed to create comment', error);
+        throw error;
+    }
+}
+
+export async function register({ email, password }) {
+    try {
+        const res = await api.post('/api/auth/register', { email, password });
+        return res.data;
+    } catch (error) {
+        console.error('Failed to register:', error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export async function login({ email, password }) {
+    try {
+        const res = await api.post('/api/auth/login', { email, password });
+        const token = res.data?.token;
+
+        if (!token) {
+            throw new Error('Login failed: no token received from server');
+        }
+
+        localStorage.setItem('jwt', token);
+        return token;
+    } catch (error) {
+        console.error('Failed to login:', error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export async function getLeaderboard() {
+    try {
+        const res = await api.get('/api/leaderboard');
+        return res.data;
+    } catch (error) {
+        console.error('Failed to fetch leaderboard', error);
+        throw error;
+    }
+}
+
+export async function joinRandom() {
+    try {
+        const res = await api.get('/api/join-random');
+        return res.data;
+    } catch (error) {
+        console.error('Failed to join random match', error);
+        throw error;
+    }
+}
+
+export async function searchSessions(request) {
+    try {
+        const res = await api.post('/api/search', request);
+        return res.data;
+    } catch (error) {
+        console.error('Failed to search sessions', error);
+        throw error;
+    }
+}
+
+export default api;

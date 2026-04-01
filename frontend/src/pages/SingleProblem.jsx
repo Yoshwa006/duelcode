@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { generateKey, getSingle } from "../service/api.js";
+import { generateKey, getSingleQuestion } from "../service/api.js";
 import Navbar from "../components/Navbar.jsx";
 import CommentList from "../components/CommentList.jsx";
 
@@ -19,7 +19,7 @@ function SingleProblem() {
         const fetchProblem = async () => {
             try {
                 setLoading(true);
-                const problemData = await getSingle({ id });
+                const problemData = await getSingleQuestion(id);
                 setProblem(problemData);
             } catch (err) {
                 setError(err.message || 'Something went wrong.');
@@ -32,23 +32,15 @@ function SingleProblem() {
             fetchProblem();
         }
     }, [id]);
-    //
-    // useEffect(() => {
-    //     const polling = async() =>{
-    //         try{
-    //             const res = await polling()
-    //         }
-    //     }
-    // })
+
     const handleGenerateKey = async () => {
         try {
             setWaiting(true);
 
-            const generated_key = await generateKey({ questionId: id });
+            const generated_key = await generateKey(id);
             
             const token = typeof generated_key === 'string' ? generated_key : generated_key.token || JSON.stringify(generated_key);
-            localStorage.setItem("key", token);
-
+            
             setKey(token);
             setShowKey(true);
             setWaiting(false);
@@ -150,8 +142,7 @@ function SingleProblem() {
                             <button
                                 onClick={() => {
                                     if (window.confirm("Are you sure you want to quit the battle?")) {
-                                        localStorage.removeItem("ctoken");
-                                        localStorage.removeItem("QID");
+                                        localStorage.removeItem("sessionToken");
                                         setBattleStarted(false);
                                         navigate('/');
                                     }

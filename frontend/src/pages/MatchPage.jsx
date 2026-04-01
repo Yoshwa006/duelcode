@@ -6,6 +6,23 @@ import { getSessionByToken, submitCode } from "../service/api.js";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
+const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8080';
+
+function getUserFromToken() {
+    try {
+        const token = localStorage.getItem('jwt');
+        if (!token) return 'Guest';
+        
+        const payload = token.split('.')[1];
+        if (!payload) return 'Guest';
+        
+        const decoded = JSON.parse(atob(payload));
+        return decoded.sub || decoded.email || 'User';
+    } catch {
+        return 'Guest';
+    }
+}
+
 function MatchPage() {
     const { token } = useParams();
     const navigate = useNavigate();
@@ -22,27 +39,23 @@ function MatchPage() {
     const [messages, setMessages] = useState([]);
     const [chatInput, setChatInput] = useState("");
 
-    // Hardcode user email if possible, or random for now
-    const userEmail = localStorage.getItem("jwt") ? JSON.parse(atob(localStorage.getItem("jwt").split('.')[1])).sub : "Guest";
+    const userEmail = getUserFromToken();
 
     useEffect(() => {
         const initMatch = async () => {
             try {
-                // Fetch match info (question, players)
                 const data = await getSessionByToken(token);
                 setSessionData(data);
-                // Initialize editor with template
+
                 if (data.question?.stdIn) {
                     setCode(`// Solve: ${data.question.title}\n\n`);
                 }
 
-                // Set up WebSocket
-                const socket = new SockJS(`http://localhost:8080/ws?userId=${encodeURIComponent(userEmail)}`);
+                const socket = new SockJS(`${WS_URL}/ws?userId=${encodeURIComponent(userEmail)}`);
                 const client = new Client({
                     webSocketFactory: () => socket,
                     onConnect: () => {
                         console.log("Connected to match WebSocket");
-                        // Subscribe to match topic
                         client.subscribe(`/topic/match/${token}`, (msg) => {
                             const parsed = JSON.parse(msg.body);
                             setMessages(prev => [...prev, parsed]);
@@ -72,7 +85,7 @@ function MatchPage() {
                 stompClient.deactivate();
             }
         };
-    }, [token]);
+    }, [token, userEmail]);
 
     const handleCodeChange = (value) => {
         setCode(value || "");
@@ -142,7 +155,6 @@ function MatchPage() {
             <Navbar />
 
             <div className="flex flex-1 p-4 gap-4 overflow-hidden" style={{ height: "calc(100vh - 64px)" }}>
-                {/* Left side - Problem details and Chat */}
                 <div className="w-1/3 flex flex-col gap-4 overflow-y-auto">
                     <div className="bg-white rounded shadow-sm border border-gray-200 p-6">
                         <h2 className="text-xl font-bold text-blue-800 mb-2">{question?.title || "Loading..."}</h2>
@@ -173,7 +185,6 @@ function MatchPage() {
                         )}
                     </div>
 
-                    {/* Chat Box */}
                     <div className="bg-white rounded shadow-sm border border-gray-200 flex flex-col flex-1 min-h-[300px]">
                         <div className="px-4 py-2 border-b bg-gray-50 font-semibold text-gray-700 text-sm flex justify-between">
                             <span>Match Chat</span>
@@ -206,7 +217,6 @@ function MatchPage() {
                     </div>
                 </div>
 
-                {/* Right side - Editor and Output */}
                 <div className="w-2/3 flex flex-col gap-4">
                     <div className="bg-white rounded shadow-sm border border-gray-200 flex-1 flex flex-col overflow-hidden">
                         <div className="px-4 py-2 border-b bg-gray-50 flex justify-between items-center">
@@ -236,7 +246,6 @@ function MatchPage() {
                         </div>
                     </div>
 
-                    {/* Output Console */}
                     <div className="h-48 bg-[#1e1e1e] rounded shadow flex flex-col overflow-hidden border border-gray-800">
                         <div className="px-4 py-1 text-xs font-mono text-gray-400 bg-[#2d2d2d] border-b border-black flex justify-between">
                             <span>Console Output</span>

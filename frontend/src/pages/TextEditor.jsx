@@ -1,7 +1,7 @@
 import Editor from "@monaco-editor/react";
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getSingle, submitCode } from "../service/api";
+import { getSingleQuestion, submitCode } from "../service/api";
 
 function TextEditor() {
     const [code, setCode] = useState("// write your code here");
@@ -19,7 +19,7 @@ function TextEditor() {
             try {
                 setLoading(true);
                 setError(null);
-                const problemData = await getSingle({ id });
+                const problemData = await getSingleQuestion(id);
                 setProblem(problemData);
                 setCode("// write your code here");
             } catch (err) {

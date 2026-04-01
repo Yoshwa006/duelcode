@@ -12,8 +12,9 @@ function Navbar() {
 
     const handleLogout = () => {
         localStorage.removeItem('jwt');
+        localStorage.removeItem('sessionToken');
         setIsLoggedIn(false);
-        navigate('/auth');
+        navigate('/');
     };
 
     return (
