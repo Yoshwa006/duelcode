@@ -255,4 +255,56 @@ public class JudgeService {
         res.setErrorCode(0);
         return res;
     }
+
+    @Transactional
+    public OperationStatusResponse cancelSession(String token) {
+        OperationStatusResponse res = new OperationStatusResponse();
+        
+        if (token == null || token.trim().isEmpty()) {
+            res.setStatus("FAILED");
+            res.setMessage("Token is required");
+            res.setErrorCode(400);
+            return res;
+        }
+
+        Session session = sessionRepo.findByToken(token.trim());
+        if (session == null) {
+            res.setStatus("FAILED");
+            res.setMessage("Session not found");
+            res.setErrorCode(404);
+            return res;
+        }
+
+        Users currentUser = this.currentUser.get();
+        if (currentUser == null) {
+            res.setStatus("FAILED");
+            res.setMessage("Not authenticated");
+            res.setErrorCode(401);
+            return res;
+        }
+
+        int userId = currentUser.getId();
+        boolean isCreator = session.getCreatedBy() != null && session.getCreatedBy().getId() == userId;
+        
+        if (!isCreator) {
+            res.setStatus("FAILED");
+            res.setMessage("Only the session creator can cancel");
+            res.setErrorCode(403);
+            return res;
+        }
+
+        if (session.getJoinedBy() != null) {
+            res.setStatus("FAILED");
+            res.setMessage("Cannot cancel - opponent has already joined. Use Surrender instead.");
+            res.setErrorCode(400);
+            return res;
+        }
+
+        sessionRepo.delete(session);
+        
+        res.setStatus("SUCCESS");
+        res.setMessage("Session cancelled successfully.");
+        res.setErrorCode(0);
+        return res;
+    }
 }

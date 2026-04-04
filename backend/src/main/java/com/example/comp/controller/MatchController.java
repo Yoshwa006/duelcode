@@ -128,4 +128,10 @@ public class MatchController {
         return new ResponseEntity<>(res, mapStatus(res.getErrorCode()));
     }
 
+    @PostMapping("/cancel")
+    public ResponseEntity<OperationStatusResponse> cancel(@RequestParam String token) {
+        OperationStatusResponse res = judgeService.cancelSession(token);
+        return new ResponseEntity<>(res, mapStatus(res.getErrorCode()));
+    }
+
 }

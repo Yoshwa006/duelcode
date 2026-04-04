@@ -183,6 +183,16 @@ export async function surrender(token) {
     }
 }
 
+export async function cancelSession(token) {
+    try {
+        const res = await api.post(`/api/cancel?token=${token}`);
+        return res.data;
+    } catch (error) {
+        console.error('Failed to cancel', error);
+        throw error;
+    }
+}
+
 export async function joinRandom() {
     try {
         const res = await api.get('/api/join-random');

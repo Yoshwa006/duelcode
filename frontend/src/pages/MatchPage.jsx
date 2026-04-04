@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
 import Editor from "@monaco-editor/react";
-import { getSessionByToken, submitCode, generateKey, surrender } from "../service/api.js";
+import { getSessionByToken, submitCode, generateKey, surrender, cancelSession } from "../service/api.js";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
@@ -165,6 +165,28 @@ function MatchPage() {
         }
     };
 
+    const handleCancel = async () => {
+        if (!confirm("Are you sure you want to cancel this session?")) {
+            return;
+        }
+        try {
+            const res = await cancelSession(token);
+            if (res.status === "SUCCESS") {
+                alert("Session cancelled.");
+                window.location.href = "/";
+            } else {
+                alert(res.message || "Failed to cancel");
+            }
+        } catch (err) {
+            alert("Failed to cancel: " + (err.message || "Unknown error"));
+        }
+    };
+
+    const isCreator = sessionData?.createdBy === userEmail;
+    const hasOpponent = sessionData?.joinedBy != null;
+    const showCancel = isCreator && !hasOpponent;
+    const showSurrender = hasOpponent;
+
     if (loading) return (
         <div className="container">
             <Navbar />
@@ -262,6 +284,7 @@ function MatchPage() {
                             >
                                 {submitting ? "Running..." : "Submit Code"}
                             </button>
+                            {showSurrender && (
                             <button 
                                 onClick={handleSurrender}
                                 style={{ float: 'right', marginLeft: '5px', backgroundColor: '#dc3545', color: '#fff' }}
@@ -269,6 +292,16 @@ function MatchPage() {
                             >
                                 Surrender
                             </button>
+                            )}
+                            {showCancel && (
+                            <button 
+                                onClick={handleCancel}
+                                style={{ float: 'right', marginLeft: '5px', backgroundColor: '#6c757d', color: '#fff' }}
+                                className="cf-btn"
+                            >
+                                Cancel Match
+                            </button>
+                            )}
                         </div>
                         <div style={{ flex: 1 }}>
                             <Editor
