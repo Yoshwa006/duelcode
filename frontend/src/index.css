@@ -7,13 +7,13 @@
   --cf-orange: #ff8c00;
   --cf-red: #ff4444;
   --cf-green: #28a745;
-  --cf-bg: #0f0f0f;
-  --cf-bg-secondary: #1a1a1a;
-  --cf-bg-tertiary: #252525;
-  --cf-border: #333;
-  --cf-text: #ccc;
-  --cf-text-secondary: #888;
-  --cf-text-bright: #fff;
+  --cf-bg: #fff;
+  --cf-bg-secondary: #f5f5f5;
+  --cf-bg-tertiary: #eee;
+  --cf-border: #ccc;
+  --cf-text: #333;
+  --cf-text-secondary: #666;
+  --cf-text-bright: #000;
 }
 
 * {
@@ -57,75 +57,70 @@ input[type="password"],
 input[type="email"],
 input[type="number"],
 textarea {
-  background: var(--cf-bg-secondary);
-  border: 1px solid var(--cf-border);
-  color: var(--cf-text-bright);
-  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #000;
+  padding: 6px 8px;
   font-family: inherit;
-  font-size: 14px;
-  border-radius: 4px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-size: 13px;
+  border-radius: 2px;
 }
 
 input:focus,
 textarea:focus {
   outline: none;
-  border-color: var(--cf-blue);
-  box-shadow: 0 0 0 2px rgba(54, 102, 176, 0.3);
+  border-color: #3666b0;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: var(--cf-text-secondary);
+  color: #888;
 }
 
 button,
 .cf-btn {
-  background: linear-gradient(180deg, #4a4a4a 0%, #3a3a3a 100%);
-  border: 1px solid #555;
-  color: var(--cf-text-bright);
-  padding: 8px 16px;
+  background: #fff;
+  border: 1px solid #aaa;
+  color: #000;
+  padding: 6px 12px;
   cursor: pointer;
   font-family: inherit;
   font-size: 13px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  border-radius: 3px;
+  transition: all 0.15s ease;
 }
 
 button:hover,
 .cf-btn:hover {
-  background: linear-gradient(180deg, #5a5a5a 0%, #4a4a4a 100%);
-  border-color: #666;
-  transform: translateY(-1px);
+  background: #e8e8e8;
+  border-color: #888;
 }
 
 .cf-btn-primary {
-  background: linear-gradient(180deg, var(--cf-blue) 0%, var(--cf-blue-dark) 100%);
-  border-color: var(--cf-blue-dark);
+  background: #3666b0;
+  border-color: #3666b0;
   color: #fff;
-  font-weight: 500;
 }
 
 .cf-btn-primary:hover {
-  background: linear-gradient(180deg, var(--cf-blue-light) 0%, var(--cf-blue) 100%);
-  border-color: var(--cf-blue);
-  box-shadow: 0 4px 12px rgba(54, 102, 176, 0.4);
+  background: #2a5696;
+  border-color: #2a5696;
 }
 
 .cf-btn-success {
-  background: linear-gradient(180deg, var(--cf-green) 0%, #1e7a34 100%);
-  border-color: #1e7a34;
+  background: #28a745;
+  border-color: #28a745;
   color: #fff;
 }
 
 .cf-btn-success:hover {
-  background: linear-gradient(180deg, #34ce57 0%, var(--cf-green) 100%);
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+  background: #218838;
+  border-color: #218838;
 }
 
 .cf-btn-danger {
-  background: linear-gradient(180deg, var(--cf-red) 0%, #cc3333 100%);
-  border-color: #cc3333;
+  background: #dc3545;
+  border-color: #dc3545;
   color: #fff;
 }
 
@@ -135,133 +130,120 @@ button:hover,
 }
 
 .panel {
-  background: var(--cf-bg-secondary);
-  border: 1px solid var(--cf-border);
-  border-radius: 8px;
-  margin-bottom: 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 15px;
   overflow: hidden;
-  transition: border-color 0.2s ease;
-}
-
-.panel:hover {
-  border-color: #444;
 }
 
 .panel-title {
-  background: linear-gradient(90deg, var(--cf-blue-dark) 0%, var(--cf-blue) 100%);
-  color: #fff;
-  padding: 10px 15px;
-  font-weight: 600;
-  font-size: 15px;
-  border-bottom: none;
+  background: #e8e8e8;
+  color: #333;
+  padding: 8px 12px;
+  font-weight: 500;
+  font-size: 14px;
+  border-bottom: 1px solid #ccc;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .panel-content {
-  padding: 15px;
-  background: var(--cf-bg-secondary);
+  padding: 12px;
+  background: #fff;
 }
 
 table.cf-table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--cf-bg-secondary);
-  border-radius: 8px;
-  overflow: hidden;
+  background: #fff;
+  border: 1px solid #ccc;
 }
 
 table.cf-table th {
-  background: linear-gradient(180deg, var(--cf-bg-tertiary) 0%, var(--cf-bg-secondary) 100%);
-  padding: 12px 15px;
-  border-bottom: 2px solid var(--cf-blue);
-  font-weight: 600;
+  background: #eff;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  font-weight: 500;
   text-align: left;
-  color: var(--cf-text-bright);
+  color: #333;
   font-size: 13px;
 }
 
 table.cf-table td {
-  padding: 12px 15px;
-  border-bottom: 1px solid var(--cf-border);
+  padding: 8px 12px;
+  border: 1px solid #ccc;
 }
 
 table.cf-table tr {
-  transition: background-color 0.2s ease;
 }
 
 table.cf-table tr:nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: #f9f9f9;
 }
 
 table.cf-table tr:hover {
-  background-color: rgba(54, 102, 176, 0.15);
+  background-color: #f0f0f0;
 }
 
 .cf-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 25px;
-  background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
-  border-bottom: 3px solid var(--cf-blue);
+  padding: 8px 20px;
+  background: #fff;
+  border-bottom: 2px solid #3666b0;
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
 .cf-nav-brand {
-  font-size: 26px;
-  font-weight: 800;
-  color: var(--cf-text-bright);
-  letter-spacing: -1px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #000;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .cf-nav-brand a {
-  color: var(--cf-text-bright);
+  color: #000;
 }
 
 .cf-nav-brand:hover a {
-  color: var(--cf-orange);
+  color: #3666b0;
 }
 
 .cf-brand-icon {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--cf-orange) 0%, #ff6600 100%);
-  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  background: #3666b0;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 18px;
+  fontSize: 16px;
   color: #fff;
-  box-shadow: 0 2px 8px rgba(255, 140, 0, 0.4);
 }
 
 .cf-nav-links {
   display: flex;
-  gap: 20px;
+  gap: 15px;
   align-items: center;
 }
 
 .cf-nav-link {
-  color: var(--cf-text);
+  color: #3666b0;
   font-size: 14px;
   font-weight: 500;
-  padding: 8px 12px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
 }
 
 .cf-nav-link:hover {
-  color: var(--cf-text-bright);
-  background: rgba(54, 102, 176, 0.2);
-  text-decoration: none;
+  color: #3666b0;
+  text-decoration: underline;
 }
 
 .cf-nav-user {
@@ -269,11 +251,11 @@ table.cf-table tr:hover {
   gap: 10px;
   align-items: center;
   font-size: 13px;
-  color: var(--cf-text-secondary);
+  color: #666;
 }
 
 .cf-nav-user a {
-  color: var(--cf-blue-light);
+  color: #3666b0;
 }
 
 .cf-divider {
@@ -340,55 +322,55 @@ table.cf-table tr:hover {
 }
 
 .alert-success {
-  background: rgba(40, 167, 69, 0.15);
-  border-color: var(--cf-green);
-  color: #4caf50;
+  background: #d4edda;
+  border-color: #28a745;
+  color: #155724;
 }
 
 .alert-error {
-  background: rgba(255, 68, 68, 0.15);
-  border-color: var(--cf-red);
-  color: #ff6666;
+  background: #f8d7da;
+  border-color: #dc3545;
+  color: #721c24;
 }
 
 .alert-warning {
-  background: rgba(255, 152, 0, 0.15);
-  border-color: #ff9800;
-  color: #ffb74d;
+  background: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
 }
 
 .alert-info {
-  background: rgba(54, 102, 176, 0.15);
-  border-color: var(--cf-blue);
-  color: var(--cf-blue-light);
+  background: #d1ecf1;
+  border-color: #17a2b8;
+  color: #0c5460;
 }
 
 .code-block {
-  font-family: 'Consolas', 'Monaco', 'Fira Code', monospace;
-  background: var(--cf-bg-tertiary);
-  border: 1px solid var(--cf-border);
-  padding: 12px 15px;
-  margin: 8px 0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  background: #f5f5f5;
+  border: 1px solid #ccc;
+  padding: 10px 12px;
+  margin: 5px 0;
   font-size: 13px;
   white-space: pre-wrap;
   overflow-x: auto;
-  border-radius: 6px;
-  color: #e0e0e0;
+  border-radius: 3px;
+  color: #333;
 }
 
 .loading-spinner {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 60px;
-  color: var(--cf-text-secondary);
+  padding: 40px;
+  color: #666;
   flex-direction: column;
-  gap: 15px;
+  gap: 10px;
 }
 
 .loading-spinner::after {
   content: "Loading...";
-  animation: pulse 1.5s infinite;
+  color: #888;
 }
 
 @keyframes pulse {

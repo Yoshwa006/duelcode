@@ -106,7 +106,7 @@ function Navbar() {
 
                 <div className="cf-nav-user">
                     {isLoggedIn ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                             <div 
                                 onClick={() => navigate('/profile')}
                                 style={{ 
@@ -118,38 +118,33 @@ function Navbar() {
                             >
                                 <div 
                                     style={{
-                                        width: '35px',
-                                        height: '35px',
+                                        width: '30px',
+                                        height: '30px',
                                         borderRadius: '50%',
-                                        background: `linear-gradient(135deg, ${getRankColor(userProfile?.rank)} 0%, #333 100%)`,
+                                        background: getRankColor(userProfile?.rank),
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        fontSize: '16px',
+                                        fontSize: '14px',
                                         fontWeight: 'bold',
                                         color: '#fff'
                                     }}
                                 >
                                     {userProfile?.username?.charAt(0).toUpperCase() || 'U'}
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
-                                    <span style={{ color: '#fff', fontSize: '14px', fontWeight: '500' }}>
-                                        {userProfile?.username || 'User'}
-                                    </span>
-                                    <span style={{ color: getRankColor(userProfile?.rank), fontSize: '12px', fontWeight: '600' }}>
-                                        {userProfile?.rating || 1200}
-                                    </span>
-                                </div>
+                                <span style={{ color: '#000', fontSize: '14px', fontWeight: '500' }}>
+                                    {userProfile?.username || 'User'}
+                                </span>
                             </div>
-                            <span className="cf-divider" style={{ margin: '0 5px' }}>|</span>
-                            <span onClick={handleLogout} style={{ color: '#ff6666', cursor: 'pointer', fontSize: '13px' }}>
+                            <span style={{ color: '#888' }}>|</span>
+                            <span onClick={handleLogout} style={{ color: '#3666b0', cursor: 'pointer', fontSize: '13px' }}>
                                 Logout
                             </span>
                         </div>
                     ) : (
                         <>
                             <Link to="/auth" className="cf-nav-link">Sign In</Link>
-                            <span className="cf-divider">|</span>
+                            <span style={{ color: '#888' }}>|</span>
                             <Link to="/auth" className="cf-nav-link">Register</Link>
                         </>
                     )}

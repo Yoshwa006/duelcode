@@ -70,11 +70,11 @@ function ProfilePage() {
     const getRankColor = (rank) => {
         const colors = {
             'Newbie': '#808080',
-            'Pupil': '#00FF00',
-            'Specialist': '#00FFFF',
+            'Pupil': '#00CC00',
+            'Specialist': '#00CCCC',
             'Expert': '#0000FF',
-            'Candidate Master': '#8847FF',
-            'Master': '#FF8C00',
+            'Candidate Master': '#9900FF',
+            'Master': '#FFA500',
             'Grandmaster': '#FF0000',
             'Legendary Grandmaster': '#FFD700'
         };
@@ -122,14 +122,15 @@ function ProfilePage() {
 
                             <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start', marginBottom: '20px' }}>
                                 <div style={{
-                                    width: '150px',
-                                    height: '150px',
+                                    width: '120px',
+                                    height: '120px',
                                     borderRadius: '50%',
-                                    background: `linear-gradient(135deg, ${getRankColor(profile?.rank)} 0%, #333 100%)`,
+                                    background: getRankColor(profile?.rank),
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    fontSize: '60px',
+                                    fontSize: '48px',
+                                    fontWeight: 'bold',
                                     color: '#fff',
                                     flexShrink: 0
                                 }}>
@@ -147,7 +148,7 @@ function ProfilePage() {
                                             style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px', width: '100%' }}
                                         />
                                     ) : (
-                                        <h2 style={{ fontSize: '28px', fontWeight: '700', margin: '0 0 10px 0', color: '#fff' }}>
+                                        <h2 style={{ fontSize: '28px', fontWeight: '700', margin: '0 0 10px 0', color: '#000' }}>
                                             {profile?.username || 'User'}
                                         </h2>
                                     )}
@@ -158,16 +159,19 @@ function ProfilePage() {
                                             borderRadius: '4px', 
                                             fontSize: '12px',
                                             fontWeight: '600',
-                                            color: '#000'
+                                            color: '#fff'
                                         }}>
                                             {profile?.rank || 'Newbie'}
                                         </span>
-                                        <span style={{ color: '#888', fontSize: '14px' }}>
-                                            Rating: <span style={{ color: '#fff' }}>{profile?.rating || 1200}</span>
+                                        <span style={{ color: '#666', fontSize: '14px' }}>
+                                            Rating: <span style={{ color: '#000', fontWeight: '600' }}>{profile?.rating || 1200}</span>
                                         </span>
-                                        <span style={{ color: '#888', fontSize: '14px' }}>
-                                            Max: <span style={{ color: '#fff' }}>{profile?.maxRating || 1200}</span>
+                                        <span style={{ color: '#666', fontSize: '14px' }}>
+                                            Max: <span style={{ color: '#000', fontWeight: '600' }}>{profile?.maxRating || 1200}</span>
                                         </span>
+                                    </div>
+                                    <div style={{ marginTop: '8px', color: '#666', fontSize: '13px' }}>
+                                        {profile?.email}
                                     </div>
                                 </div>
                             </div>
@@ -219,41 +223,50 @@ function ProfilePage() {
                                 <>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                                         <div>
-                                            <div style={{ color: '#666', fontSize: '12px', marginBottom: '3px' }}>Country</div>
-                                            <div style={{ color: '#fff', fontSize: '15px' }}>{profile?.country || '-'}</div>
+                                            <div style={{ color: '#888', fontSize: '12px', marginBottom: '3px' }}>From</div>
+                                            <div style={{ color: '#000', fontSize: '15px' }}>{profile?.country || '-'}{profile?.city ? `, ${profile.city}` : ''}</div>
                                         </div>
                                         <div>
-                                            <div style={{ color: '#666', fontSize: '12px', marginBottom: '3px' }}>City</div>
-                                            <div style={{ color: '#fff', fontSize: '15px' }}>{profile?.city || '-'}</div>
+                                            <div style={{ color: '#888', fontSize: '12px', marginBottom: '3px' }}>Organization</div>
+                                            <div style={{ color: '#000', fontSize: '15px' }}>{profile?.organization || '-'}</div>
                                         </div>
                                         <div>
-                                            <div style={{ color: '#666', fontSize: '12px', marginBottom: '3px' }}>Organization</div>
-                                            <div style={{ color: '#fff', fontSize: '15px' }}>{profile?.organization || '-'}</div>
+                                            <div style={{ color: '#888', fontSize: '12px', marginBottom: '3px' }}>Contribution</div>
+                                            <div style={{ color: '#000', fontSize: '15px' }}>{profile?.contribution || 0}</div>
                                         </div>
                                         <div>
-                                            <div style={{ color: '#666', fontSize: '12px', marginBottom: '3px' }}>Contribution</div>
-                                            <div style={{ color: '#fff', fontSize: '15px' }}>{profile?.contribution || 0}</div>
+                                            <div style={{ color: '#888', fontSize: '12px', marginBottom: '3px' }}>Friends</div>
+                                            <div style={{ color: '#000', fontSize: '15px' }}>{profile?.friendCount || 0}</div>
                                         </div>
                                     </div>
 
                                     {(profile?.website || profile?.twitter || profile?.github || profile?.linkedin) && (
                                         <div style={{ marginBottom: '20px' }}>
-                                            <div style={{ color: '#666', fontSize: '12px', marginBottom: '8px' }}>Links</div>
+                                            <div style={{ color: '#888', fontSize: '12px', marginBottom: '8px' }}>Contacts</div>
                                             <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-                                                {profile?.website && <a href={profile.website} target="_blank" rel="noopener noreferrer" style={{ color: '#4a7fc7' }}>🌐 Website</a>}
-                                                {profile?.twitter && <span style={{ color: '#4a7fc7' }}>🐦 @{profile.twitter}</span>}
-                                                {profile?.github && <span style={{ color: '#4a7fc7' }}>💻 GitHub: {profile.github}</span>}
-                                                {profile?.linkedin && <span style={{ color: '#4a7fc7' }}>💼 LinkedIn: {profile.linkedin}</span>}
+                                                {profile?.website && (
+                                                    <a href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`} target="_blank" rel="noopener noreferrer" style={{ color: '#3666b0' }}>
+                                                        🌐 {profile.website}
+                                                    </a>
+                                                )}
+                                                {profile?.twitter && <span style={{ color: '#3666b0' }}>🐦 @{profile.twitter}</span>}
+                                                {profile?.github && <span style={{ color: '#3666b0' }}>💻 github.com/{profile.github}</span>}
+                                                {profile?.linkedin && <span style={{ color: '#3666b0' }}>💼 {profile.linkedin}</span>}
                                             </div>
                                         </div>
                                     )}
 
                                     {profile?.bio && (
                                         <div style={{ marginBottom: '20px' }}>
-                                            <div style={{ color: '#666', fontSize: '12px', marginBottom: '8px' }}>Bio</div>
-                                            <div style={{ color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>{profile.bio}</div>
+                                            <div style={{ color: '#888', fontSize: '12px', marginBottom: '8px' }}>Bio</div>
+                                            <div style={{ color: '#333', fontSize: '14px', lineHeight: '1.6' }}>{profile.bio}</div>
                                         </div>
                                     )}
+
+                                    <div style={{ color: '#888', fontSize: '12px' }}>
+                                        Registered: {profile?.registrationTime ? new Date(profile.registrationTime).toLocaleDateString() : 'N/A'}
+                                        {profile?.lastOnlineTime && ` | Last seen: ${new Date(profile.lastOnlineTime).toLocaleDateString()}`}
+                                    </div>
                                 </>
                             )}
                         </div>
@@ -266,26 +279,26 @@ function ProfilePage() {
                         <div className="panel-content">
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', textAlign: 'center' }}>
                                 <div>
-                                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#fff' }}>{profile?.eloRating || 1200}</div>
+                                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#000' }}>{profile?.eloRating || 1200}</div>
                                     <div style={{ fontSize: '12px', color: '#666' }}>ELO Rating</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#4caf50' }}>{profile?.rankedWins || 0}</div>
+                                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#28a745' }}>{profile?.rankedWins || 0}</div>
                                     <div style={{ fontSize: '12px', color: '#666' }}>Wins</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#f44336' }}>{profile?.rankedLosses || 0}</div>
+                                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#dc3545' }}>{profile?.rankedLosses || 0}</div>
                                     <div style={{ fontSize: '12px', color: '#666' }}>Losses</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#4a7fc7' }}>{profile?.questionsSolved || 0}</div>
+                                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#3666b0' }}>{profile?.questionsSolved || 0}</div>
                                     <div style={{ fontSize: '12px', color: '#666' }}>Problems Solved</div>
                                 </div>
                             </div>
                             <div className="divider-line" style={{ margin: '20px 0' }}></div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', textAlign: 'center' }}>
                                 <div>
-                                    <div style={{ fontSize: '18px', fontWeight: '600', color: '#4caf50' }}>{profile?.easySolved || 0}</div>
+                                    <div style={{ fontSize: '18px', fontWeight: '600', color: '#28a745' }}>{profile?.easySolved || 0}</div>
                                     <div style={{ fontSize: '12px', color: '#666' }}>Easy</div>
                                 </div>
                                 <div>
@@ -293,7 +306,7 @@ function ProfilePage() {
                                     <div style={{ fontSize: '12px', color: '#666' }}>Medium</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: '18px', fontWeight: '600', color: '#f44336' }}>{profile?.hardSolved || 0}</div>
+                                    <div style={{ fontSize: '18px', fontWeight: '600', color: '#dc3545' }}>{profile?.hardSolved || 0}</div>
                                     <div style={{ fontSize: '12px', color: '#666' }}>Hard</div>
                                 </div>
                             </div>
