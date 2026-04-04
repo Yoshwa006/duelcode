@@ -1,17 +1,58 @@
 import Editor from "@monaco-editor/react";
 import { Link, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getSingleQuestion, submitCode } from "../service/api";
+import Navbar from "../components/Navbar";
+
+const LANGUAGES = [
+    { id: 62, name: "Java", extension: "java", monaco: "java", template: `public class Main {\n    public static void main(String[] args) {\n        // Your code here\n        \n    }\n}` },
+    { id: 71, name: "Python", extension: "py", monaco: "python", template: `# Your code here\n\ndef main():\n    pass\n\nif __name__ == "__main__":\n    main()` },
+    { id: 76, name: "C++", extension: "cpp", monaco: "cpp", template: `#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    // Your code here\n    \n    return 0;\n}` },
+    { id: 50, name: "C", extension: "c", monaco: "c", template: `#include <stdio.h>\n\nint main() {\n    // Your code here\n    \n    return 0;\n}` },
+    { id: 63, name: "JavaScript", extension: "js", monaco: "javascript", template: `// Your code here\n\nfunction main() {\n    \n}\n\nmain();` },
+    { id: 72, name: "Ruby", extension: "rb", monaco: "ruby", template: `# Your code here\n\ndef main\n  \nend\n\nmain` },
+    { id: 68, name: "Go", extension: "go", monaco: "go", template: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Your code here\n    \n}` },
+    { id: 51, name: "C#", extension: "cs", monaco: "csharp", template: `using System;\n\nclass Main {\n    static void Main() {\n        // Your code here\n        \n    }\n}` },
+    { id: 74, name: "Swift", extension: "swift", monaco: "swift", template: `import Foundation\n\n// Your code here\n\nfunc main() {\n    \n}\n\nmain()` },
+    { id: 78, name: "Kotlin", extension: "kt", monaco: "kotlin", template: `fun main() {\n    // Your code here\n    \n}` },
+];
 
 function TextEditor() {
-    const [code, setCode] = useState("// write your code here");
+    const fileInputRef = useRef(null);
     const { id } = useParams();
+    const [code, setCode] = useState("");
+    const [language, setLanguage] = useState(LANGUAGES[0]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [problem, setProblem] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [result, setResult] = useState(null);
 
     const handleEditorChange = (value) => {
         setCode(value || "");
+    };
+
+    const handleLanguageChange = (e) => {
+        const selectedLang = LANGUAGES.find(l => l.id === parseInt(e.target.value));
+        if (selectedLang) {
+            setLanguage(selectedLang);
+            if (!code.trim()) {
+                setCode(selectedLang.template);
+            }
+        }
+    };
+
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            setCode(event.target.result);
+        };
+        reader.readAsText(file);
+        
+        e.target.value = '';
     };
 
     useEffect(() => {
@@ -21,7 +62,7 @@ function TextEditor() {
                 setError(null);
                 const problemData = await getSingleQuestion(id);
                 setProblem(problemData);
-                setCode("// write your code here");
+                setCode(language.template);
             } catch (err) {
                 setError(err.message || 'Something went wrong.');
             } finally {
@@ -36,13 +77,16 @@ function TextEditor() {
 
     const handleSubmit = async () => {
         if (!code.trim()) {
-            console.warn("Editor is empty !");
+            console.warn("Editor is empty!");
             return;
         }
 
+        setSubmitting(true);
+        setResult(null);
+
         try {
             const payload = {
-                language_id: 62,
+                language_id: language.id,
                 source_code: code,
             };
 
@@ -50,22 +94,29 @@ function TextEditor() {
             console.log("API Response:", response);
             
             if (response.status === "success") {
-                alert("Correct answer! You won the battle.");
+                setResult({ success: true, message: "🎉 Correct answer! You won the battle." });
             } else {
-                alert(`Submission failed: ${response.message || "Wrong answer"}`);
+                setResult({ success: false, message: `❌ ${response.message || "Wrong answer"}` });
             }
         } catch (error) {
             console.error("Submission failed:", error);
-            alert("Submission failed. Check console for details.");
+            setResult({ success: false, message: "Submission failed. Check console for details." });
+        } finally {
+            setSubmitting(false);
         }
     };
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen bg-gray-100">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-                    <p className="text-gray-600 font-medium">Loading editor...</p>
+            <div className="container">
+                <Navbar />
+                <div className="loading-spinner">
+                    <div className="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span>Loading editor...</span>
                 </div>
             </div>
         );
@@ -73,9 +124,12 @@ function TextEditor() {
 
     if (error) {
         return (
-            <div className="max-w-2xl mx-auto p-6">
-                <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
-                    <strong className="font-semibold">Error:</strong> {error}
+            <div className="container">
+                <Navbar />
+                <div className="page-container">
+                    <div className="alert alert-error">
+                        <strong>Error:</strong> {error}
+                    </div>
                 </div>
             </div>
         );
@@ -83,35 +137,98 @@ function TextEditor() {
 
     return (
         <div className="container">
-            <div style={{ marginTop: '20px', marginBottom: '15px' }}>
-                <Link to={`/${id}`}>
-                    &larr; Back to Problem
-                </Link>
-            </div>
-
-            <div className="panel">
-                <div className="panel-title">
-                    Submit Solution: {problem?.title || "Problem"}
+            <Navbar />
+            <div className="page-container">
+                <div style={{ marginBottom: '15px' }}>
+                    <Link to={`/${id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <span>←</span> Back to Problem
+                    </Link>
                 </div>
-                <div className="panel-content">
-                    <div style={{ border: '1px solid #b9b9b9', height: '500px', marginBottom: '15px' }}>
-                        <Editor
-                            height="100%"
-                            language="java"
-                            value={code}
-                            theme="vs-dark"
-                            onChange={handleEditorChange}
-                        />
-                    </div>
 
-                    <button
-                        onClick={handleSubmit}
-                        disabled={!code.trim()}
-                        className="cf-btn"
-                        style={{ padding: '6px 20px', fontWeight: 'bold' }}
-                    >
-                        Submit
-                    </button>
+                <div className="panel slide-up">
+                    <div className="panel-title">
+                        <span>📝</span> Submit Solution: {problem?.title || "Problem"}
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginLeft: '20px' }}>
+                            <select
+                                value={language.id}
+                                onChange={handleLanguageChange}
+                                style={{
+                                    background: 'var(--cf-bg-secondary)',
+                                    border: '1px solid var(--cf-border)',
+                                    color: '#fff',
+                                    padding: '6px 12px',
+                                    borderRadius: '4px',
+                                    fontSize: '13px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {LANGUAGES.map(lang => (
+                                    <option key={lang.id} value={lang.id}>{lang.name}</option>
+                                ))}
+                            </select>
+                            
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileUpload}
+                                accept=".java,.py,.cpp,.c,.js,.rb,.go,.cs,.swift,.kt,.txt"
+                                style={{ display: 'none' }}
+                            />
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="cf-btn"
+                                style={{ fontSize: '12px', padding: '6px 12px' }}
+                            >
+                                📁 Upload File
+                            </button>
+                        </div>
+                    </div>
+                    <div className="panel-content">
+                        <div style={{ border: '1px solid var(--cf-border)', borderRadius: '6px', height: '500px', marginBottom: '15px', overflow: 'hidden' }}>
+                            <Editor
+                                height="100%"
+                                language={language.monaco}
+                                value={code}
+                                theme="vs-dark"
+                                onChange={handleEditorChange}
+                                options={{
+                                    minimap: { enabled: false },
+                                    fontSize: 14,
+                                    fontFamily: "'Fira Code', 'Consolas', monospace",
+                                    padding: { top: 10 },
+                                    lineNumbers: "on",
+                                    scrollBeyondLastLine: false,
+                                }}
+                            />
+                        </div>
+
+                        {result && (
+                            <div className={`alert ${result.success ? 'alert-success' : 'alert-error'}`}>
+                                {result.message}
+                            </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '15px' }}>
+                            <button
+                                onClick={handleSubmit}
+                                disabled={!code.trim() || submitting}
+                                className="cf-btn-primary"
+                                style={{ padding: '10px 25px', fontSize: '15px', fontWeight: '600' }}
+                            >
+                                {submitting ? (
+                                    <span>
+                                        <span className="loading-dots"><span></span><span></span><span></span></span> Submitting...
+                                    </span>
+                                ) : '🚀 Submit'}
+                            </button>
+                            
+                            <Link to={`/${id}`}>
+                                <button className="cf-btn" style={{ padding: '10px 20px' }}>
+                                    Cancel
+                                </button>
+                            </Link>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

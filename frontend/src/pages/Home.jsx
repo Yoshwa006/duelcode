@@ -31,7 +31,7 @@ function Home() {
 
   const handleSubmitKey = async () => {
     if (!token.trim()) {
-      setError("Please enter the key !");
+      setError("Please enter the key!");
       return;
     }
 
@@ -55,14 +55,6 @@ function Home() {
     }
   };
 
-  const handleStartBattle = (problemId) => {
-    if (activeSession) {
-      navigate(`/match/${activeSession.token}`);
-    } else {
-      navigate(`/match/create/${problemId}`);
-    }
-  };
-
   const getDifficultyClass = (difficulty) => {
     switch(difficulty?.toUpperCase()) {
       case 'HARD': return 'difficulty-hard';
@@ -76,7 +68,14 @@ function Home() {
     return (
       <div className="container">
         <NavBar />
-        <div className="loading-spinner">Loading problems...</div>
+        <div className="loading-spinner">
+          <div className="loading-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <span>Loading problems...</span>
+        </div>
       </div>
     );
   }
@@ -85,10 +84,12 @@ function Home() {
     return (
       <div className="container">
         <NavBar />
-        <div className="alert alert-error">
-          Error loading problems: {error}
-          <br /><br />
-          <button onClick={() => window.location.reload()} className="cf-btn">Retry</button>
+        <div className="page-container">
+          <div className="alert alert-error">
+            <strong>Error:</strong> {error}
+            <br /><br />
+            <button onClick={() => window.location.reload()} className="cf-btn">Retry</button>
+          </div>
         </div>
       </div>
     );
@@ -98,66 +99,76 @@ function Home() {
     <div className="container">
       <NavBar />
 
-      <div style={{ marginTop: '20px' }}>
-        <div style={{ marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Problemset</div>
+      <div className="page-container">
+        <div className="flex-row">
+          <h1 className="page-title">Problemset</h1>
           <button 
             onClick={() => activeSession ? navigate(`/match/${activeSession.token}`) : navigate('/create-problem')} 
-            className="cf-btn"
+            className="cf-btn-primary btn-icon"
           >
+            <span>⚔️</span>
             {activeSession ? 'Return to Battle' : 'Create Problem'}
           </button>
         </div>
 
-        <table className="cf-table">
-          <thead>
-            <tr>
-              <th style={{ width: '5%' }}>#</th>
-              <th style={{ width: '70%' }}>Name</th>
-              <th style={{ width: '25%' }}>Difficulty</th>
-            </tr>
-          </thead>
-          <tbody>
-            {questions.map((problem, index) => (
-              <tr key={problem.id}>
-                <td style={{ textAlign: 'center' }}>{index + 1}</td>
-                <td>
-                  <span
-                    className="problem-link"
-                    onClick={() => handleProblemClick(problem.id)}
-                  >
-                    {problem.title}
-                  </span>
-                  <div style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>
-                    {problem.description?.substring(0, 100)}...
-                  </div>
-                </td>
-                <td style={{ textAlign: 'center' }}>
-                  <span className={getDifficultyClass(problem.difficulty)}>
-                    {problem.difficulty}
-                  </span>
-                </td>
-              </tr>
-            ))}
-            {questions.length === 0 && (
+        <div className="panel">
+          <table className="cf-table">
+            <thead>
               <tr>
-                <td colSpan="3" style={{ textAlign: 'center', padding: '15px' }}>No problems available.</td>
+                <th style={{ width: '60px', textAlign: 'center' }}>#</th>
+                <th>Name</th>
+                <th style={{ width: '120px', textAlign: 'center' }}>Difficulty</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {questions.map((problem, index) => (
+                <tr key={problem.id}>
+                  <td style={{ textAlign: 'center', color: '#666' }}>{index + 1}</td>
+                  <td>
+                    <span
+                      className="problem-link"
+                      onClick={() => handleProblemClick(problem.id)}
+                    >
+                      {problem.title}
+                    </span>
+                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                      {problem.description?.substring(0, 80)}...
+                    </div>
+                  </td>
+                  <td style={{ textAlign: 'center' }}>
+                    <span className={getDifficultyClass(problem.difficulty)}>
+                      {problem.difficulty}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {questions.length === 0 && (
+                <tr>
+                  <td colSpan="3" style={{ textAlign: 'center', padding: '30px', color: '#666' }}>
+                    No problems available.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-        <div className="panel" style={{ marginTop: '30px' }}>
-          <div className="panel-title">Join Battle Challenge</div>
-          <div className="panel-content" style={{ display: 'flex', gap: '10px' }}>
+        <div className="panel slide-up" style={{ marginTop: '30px' }}>
+          <div className="panel-title">
+            <span>🎯</span> Join Battle Challenge
+          </div>
+          <div className="panel-content" style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
             <input
               type="text"
               value={token}
               onChange={(e) => setToken(e.target.value)}
               placeholder="Enter session token..."
-              style={{ width: '200px' }}
+              style={{ width: '250px', padding: '10px 15px' }}
             />
-            <button onClick={handleSubmitKey} className="cf-btn">Join Match</button>
+            <button onClick={handleSubmitKey} className="cf-btn-primary">
+              Join Match
+            </button>
+            {error && <span style={{ color: '#ff6666', fontSize: '13px' }}>{error}</span>}
           </div>
         </div>
       </div>

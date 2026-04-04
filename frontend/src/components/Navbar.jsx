@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { getMyActiveSession } from '../service/api.js';
 
 function Navbar() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [activeSession, setActiveSession] = useState(null);
+
+    const isMatchPage = location.pathname.startsWith('/match');
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -38,30 +41,24 @@ function Navbar() {
 
     return (
         <>
-            {activeSession && (
-                <div style={{ 
-                    backgroundColor: '#ff9800', 
-                    color: '#000',
-                    padding: '8px 20px',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '10px'
-                }}>
-                    <span>⚔️ You are in an active battle!</span>
-                    <span style={{ fontWeight: 'normal' }}>
+            {activeSession && !isMatchPage && (
+                <div className="battle-banner">
+                    <span className="battle-banner-icon">⚔️</span>
+                    <span>You are in an active battle!</span>
+                    <span style={{ fontWeight: 'normal', opacity: 0.9 }}>
                         ({activeSession.questionTitle})
                     </span>
                     <button 
                         onClick={() => navigate(`/match/${activeSession.token}`)}
                         style={{
                             backgroundColor: '#fff',
-                            border: '1px solid #333',
-                            padding: '3px 10px',
+                            color: '#ff8c00',
+                            border: 'none',
+                            padding: '5px 15px',
                             cursor: 'pointer',
-                            fontWeight: 'bold'
+                            fontWeight: 'bold',
+                            borderRadius: '4px',
+                            marginLeft: '10px'
                         }}
                     >
                         Return to Battle →
@@ -71,11 +68,13 @@ function Navbar() {
             
             <div className="cf-nav">
                 <div className="cf-nav-brand">
+                    <div className="cf-brand-icon">D</div>
                     <Link to="/">DuelCode</Link>
                 </div>
                 
                 <div className="cf-nav-links">
                     <Link to="/" className="cf-nav-link">Problems</Link>
+                    <Link to="/" className="cf-nav-link">Contests</Link>
                     <Link to="/" className="cf-nav-link">Leaderboard</Link>
                     {isLoggedIn && (
                         <Link to="/create-problem" className="cf-nav-link">Create Problem</Link>
@@ -85,9 +84,10 @@ function Navbar() {
                 <div className="cf-nav-user">
                     {isLoggedIn ? (
                         <>
-                            <span>Logged in</span>
+                            <div className="avatar">U</div>
+                            <span>User</span>
                             <span className="cf-divider">|</span>
-                            <span onClick={handleLogout} style={{ color: '#0000BB', cursor: 'pointer' }}>
+                            <span onClick={handleLogout} style={{ color: '#ff6666', cursor: 'pointer' }}>
                                 Logout
                             </span>
                         </>

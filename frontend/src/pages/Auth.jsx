@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { login, register } from "../service/api";
 import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar.jsx";
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -45,82 +46,87 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="container" style={{ marginTop: '20px' }}>
-      <div className="panel" style={{ maxWidth: '400px', margin: '0 auto' }}>
-        <div className="panel-title">
-          {mode === "register" ? "Create Account" : "Sign In"}
-        </div>
-
-        <div className="panel-content">
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Email</label>
-              <input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ width: '100%', boxSizing: 'border-box' }}
-                required
-                disabled={loading}
-              />
+    <div className="container">
+      <Navbar />
+      <div className="page-container">
+        <div style={{ maxWidth: '420px', margin: '40px auto' }}>
+          <div className="panel slide-up">
+            <div className="panel-title">
+              <span>🔐</span> {mode === "register" ? "Create Account" : "Sign In"}
             </div>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Password</label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ width: '100%', boxSizing: 'border-box' }}
-                required
-                minLength={mode === "register" ? 6 : undefined}
-                disabled={loading}
-              />
-              {mode === "register" && (
-                <div style={{ fontSize: '12px', color: '#666', marginTop: '3px' }}>
-                  Password must be at least 6 characters
+            <div className="panel-content">
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="form-group">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Password</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                    required
+                    minLength={mode === "register" ? 6 : undefined}
+                    disabled={loading}
+                  />
+                  {mode === "register" && (
+                    <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+                      Password must be at least 6 characters
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="cf-btn-primary"
+                  style={{ padding: '12px', fontSize: '15px', fontWeight: '600' }}
+                >
+                  {loading ? (
+                    <span>
+                      <span className="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </span> Processing...
+                    </span>
+                  ) : mode === "register" ? "Register" : "Login"}
+                </button>
+              </form>
+
+              <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px', color: '#888' }}>
+                <span
+                  onClick={() => {
+                    setMode(mode === "login" ? "register" : "login");
+                    setMsg("");
+                    setStatus(null);
+                  }}
+                  style={{ color: '#4a7fc7', cursor: 'pointer' }}
+                >
+                  {mode === "login" ? "Need an account? Register" : "Have an account? Sign in"}
+                </span>
+              </div>
+
+              {msg && (
+                <div className={`alert ${status === 'success' ? 'alert-success' : 'alert-error'}`} style={{ marginTop: '20px' }}>
+                  {msg}
                 </div>
               )}
             </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="cf-btn"
-              style={{ padding: '5px' }}
-            >
-              {loading
-                ? "Processing..."
-                : mode === "register"
-                  ? "Register"
-                  : "Login"}
-            </button>
-          </form>
-
-          <div style={{ marginTop: '15px', textAlign: 'center', fontSize: '13px' }}>
-            <span
-              onClick={() => {
-                setMode(mode === "login" ? "register" : "login");
-                setMsg("");
-                setStatus(null);
-              }}
-              style={{ color: '#0000BB', cursor: 'pointer', textDecoration: 'underline' }}
-            >
-              {mode === "login"
-                ? "Need an account? Register"
-                : "Have an account? Sign in"}
-            </span>
           </div>
-
-          {msg && (
-            <div
-              className={`alert ${status === 'success' ? 'alert-success' : 'alert-error'}`}
-            >
-              {msg}
-            </div>
-          )}
         </div>
       </div>
     </div>

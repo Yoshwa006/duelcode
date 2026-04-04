@@ -31,13 +31,19 @@ const CommentList = ({ questionId }) => {
     };
 
     return (
-        <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-2">Comments</h3>
+        <div style={{ marginTop: '20px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#fff', marginBottom: '15px' }}>
+                💬 Comments ({comments.length})
+            </h3>
             <CommentForm onSubmit={handleAddComment} />
             {comments.map((c) => (
                 <CommentItem key={c.id} comment={c} onReply={handleAddComment} />
             ))}
-            {/* Pagination controls could be added here */}
+            {comments.length === 0 && (
+                <div style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
+                    No comments yet. Be the first to comment!
+                </div>
+            )}
         </div>
     );
 };

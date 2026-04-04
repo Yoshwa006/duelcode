@@ -53,43 +53,59 @@ function SingleProblem() {
         }
     };
 
-    const getDifficultyColor = (difficulty) => {
+    const getDifficultyClass = (difficulty) => {
         switch (difficulty?.toLowerCase()) {
             case 'easy':
-                return 'text-green-600 bg-green-50 border-green-200';
+                return 'difficulty-easy';
             case 'medium':
-                return 'text-orange-600 bg-orange-50 border-orange-200';
+                return 'difficulty-medium';
             case 'hard':
-                return 'text-red-600 bg-red-50 border-red-200';
+                return 'difficulty-hard';
             default:
-                return 'text-gray-600 bg-gray-50 border-gray-200';
+                return '';
         }
     };
 
+    const isLoggedIn = () => !!localStorage.getItem('jwt');
+
+    const handleCreateBattle = () => {
+        if (!isLoggedIn()) {
+            navigate('/auth');
+            return;
+        }
+        handleGenerateKey();
+    };
+
     if (loading) return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100">
-            <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-                <p className="text-gray-600 font-medium">Loading problem...</p>
+        <div className="container">
+            <Navbar />
+            <div className="loading-spinner">
+                <div className="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span>Loading problem...</span>
             </div>
         </div>
     );
 
     if (error) return (
-        <div className="max-w-7xl mx-auto p-6">
-            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
-                <div className="flex items-center">
-                    <strong className="font-semibold">Error:</strong>
-                    <span className="ml-1">{error}</span>
+        <div className="container">
+            <Navbar />
+            <div className="page-container">
+                <div className="alert alert-error">
+                    <strong>Error:</strong> {error}
                 </div>
             </div>
         </div>
     );
 
     if (!problem) return (
-        <div className="max-w-7xl mx-auto p-6">
-            <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-6 py-4 rounded-lg">
-                Problem not found.
+        <div className="container">
+            <Navbar />
+            <div className="page-container">
+                <div className="alert alert-warning">Problem not found.</div>
             </div>
         </div>
     );
@@ -97,45 +113,60 @@ function SingleProblem() {
     return (
         <div className="container">
             <Navbar />
-            <div style={{ marginTop: '20px' }}>
-                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                    <h2 style={{ color: '#0055BB', margin: '0 0 10px 0' }}>{problem.title}</h2>
-                    <div style={{ fontSize: '13px', color: '#555' }}>
-                        time limit per test: 2 seconds<br />
-                        memory limit per test: 256 megabytes<br />
-                        difficulty: <span style={{ fontWeight: 'bold' }}>{problem.difficulty}</span>
+            <div className="page-container">
+                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                    <h2 style={{ color: '#4a7fc7', margin: '0 0 15px 0', fontSize: '28px', fontWeight: '700' }}>
+                        {problem.title}
+                    </h2>
+                    <div style={{ fontSize: '13px', color: '#888', display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                        <span>⏱️ 2 seconds</span>
+                        <span>💾 256 MB</span>
+                        <span>📊 Difficulty: <span className={getDifficultyClass(problem.difficulty)}>{problem.difficulty}</span></span>
                     </div>
                 </div>
 
-                <div style={{ lineHeight: '1.6', marginBottom: '30px', fontSize: '14px' }}>
-                    <p style={{ whiteSpace: 'pre-wrap', marginBottom: '20px' }}>
-                        {problem.description}
-                    </p>
-
-                    <div style={{ marginBottom: '20px' }}>
-                        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Input</div>
-                        <div className="monospaced-block">
-                            {problem.stdIn || "No input available."}
-                        </div>
+                <div className="panel slide-up">
+                    <div className="panel-title">
+                        <span>📖</span> Problem Statement
                     </div>
+                    <div className="panel-content" style={{ lineHeight: '1.8', fontSize: '14px', color: '#ddd' }}>
+                        <p style={{ whiteSpace: 'pre-wrap', marginBottom: '25px' }}>
+                            {problem.description}
+                        </p>
 
-                    <div style={{ marginBottom: '20px' }}>
-                        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Output</div>
-                        <div className="monospaced-block">
-                            {problem.expectedOutput || "No output available."}
-                        </div>
+                        {problem.stdIn && (
+                            <div style={{ marginBottom: '20px' }}>
+                                <div style={{ fontWeight: 'bold', fontSize: '15px', color: '#ff8c00', marginBottom: '10px' }}>
+                                    📥 Input
+                                </div>
+                                <pre className="code-block">{problem.stdIn}</pre>
+                            </div>
+                        )}
+
+                        {problem.expectedOutput && (
+                            <div style={{ marginBottom: '20px' }}>
+                                <div style={{ fontWeight: 'bold', fontSize: '15px', color: '#4caf50', marginBottom: '10px' }}>
+                                    📤 Output
+                                </div>
+                                <pre className="code-block">{problem.expectedOutput}</pre>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="panel" style={{ marginTop: '40px' }}>
-                    <div className="panel-title">Actions</div>
+                <div className="panel" style={{ marginTop: '25px' }}>
+                    <div className="panel-title">
+                        <span>⚔️</span> Actions
+                    </div>
                     <div className="panel-content" style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
                         <Link to={`/${id}/edit`}>
-                            <button className="cf-btn">Submit Code</button>
+                            <button className="cf-btn-primary btn-icon">
+                                <span>📝</span> Submit Code
+                            </button>
                         </Link>
 
-                        <button onClick={handleGenerateKey} className="cf-btn">
-                            Create 1v1 Battle
+                        <button onClick={handleCreateBattle} className="cf-btn-primary btn-icon">
+                            <span>⚔️</span> Create 1v1 Battle
                         </button>
 
                         {battleStarted && (
@@ -147,20 +178,32 @@ function SingleProblem() {
                                         navigate('/');
                                     }
                                 }}
-                                className="cf-btn" style={{ color: 'red', borderColor: 'red' }}
+                                className="cf-btn-danger"
                             >
-                                Quit Battle
+                                🏳️ Quit Battle
                             </button>
                         )}
                     </div>
                 </div>
 
                 {showKey && (
-                    <div className="panel" style={{ marginTop: '20px' }}>
-                        <div className="panel-title" style={{ backgroundColor: '#dff0d8', color: '#3c763d' }}>Battle Created</div>
-                        <div className="panel-content text-center">
-                            <p>Share this token with your opponent to start the battle:</p>
-                            <h3 style={{ fontFamily: 'monospace', fontSize: '24px', letterSpacing: '2px', background: '#eee', display: 'inline-block', padding: '10px 20px', border: '1px solid #ccc' }}>
+                    <div className="panel slide-up" style={{ marginTop: '20px' }}>
+                        <div className="panel-title" style={{ background: 'linear-gradient(90deg, #28a745 0%, #20c997 100%)' }}>
+                            🎉 Battle Created
+                        </div>
+                        <div className="panel-content" style={{ textAlign: 'center' }}>
+                            <p style={{ color: '#888', marginBottom: '15px' }}>Share this token with your opponent to start the battle:</p>
+                            <h3 style={{ 
+                                fontFamily: 'monospace', 
+                                fontSize: '28px', 
+                                letterSpacing: '3px', 
+                                background: 'var(--cf-bg-tertiary)', 
+                                display: 'inline-block', 
+                                padding: '15px 30px', 
+                                border: '2px solid var(--cf-blue)',
+                                borderRadius: '8px',
+                                color: '#fff'
+                            }}>
                                 {key}
                             </h3>
                         </div>
@@ -168,12 +211,12 @@ function SingleProblem() {
                 )}
 
                 {waiting && (
-                    <div style={{ padding: '15px', backgroundColor: '#fcf8e3', border: '1px solid #faebcc', color: '#8a6d3b', textAlign: 'center', marginTop: '15px' }}>
-                        Waiting for opponent to join...
+                    <div className="alert alert-warning" style={{ marginTop: '20px', textAlign: 'center' }}>
+                        ⏳ Waiting for opponent to join...
                     </div>
                 )}
 
-                <hr className="my-8" />
+                <div className="divider-line"></div>
 
                 <div className="panel">
                     <div className="panel-content">

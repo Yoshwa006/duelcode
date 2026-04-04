@@ -64,174 +64,207 @@ function CreateProblem() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="container">
             <Navbar />
-            <div className="flex-1 w-full max-w-4xl mx-auto p-6">
-                <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                    <div className="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
-                        <h2 className="text-xl font-bold text-gray-800">Create New Problem</h2>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6">
-                        {error && (
-                            <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm border border-red-200">
-                                {error}
-                            </div>
-                        )}
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                                <input
-                                    type="text"
-                                    name="title"
-                                    value={formData.title}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    placeholder="e.g. Two Sum"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
-                                <select
-                                    name="difficulty"
-                                    value={formData.difficulty}
-                                    onChange={handleChange}
-                                    className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                >
-                                    <option value="EASY">Easy</option>
-                                    <option value="MEDIUM">Medium</option>
-                                    <option value="HARD">Hard</option>
-                                </select>
-                            </div>
+            <div className="page-container">
+                <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                    <div className="panel slide-up">
+                        <div className="panel-title">
+                            <span>➕</span> Create New Problem
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
-                            <input
-                                type="text"
-                                name="tags"
-                                value={formData.tags}
-                                onChange={handleChange}
-                                className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                placeholder="e.g. array, hash-table, math"
-                            />
-                        </div>
+                        <div className="panel-content">
+                            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                {error && (
+                                    <div className="alert alert-error">{error}</div>
+                                )}
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                            <textarea
-                                name="description"
-                                value={formData.description}
-                                onChange={handleChange}
-                                required
-                                rows={4}
-                                className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                placeholder="Describe the problem in detail..."
-                            ></textarea>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Input Format (StdIn)</label>
-                                <textarea
-                                    name="stdIn"
-                                    value={formData.stdIn}
-                                    onChange={handleChange}
-                                    rows={3}
-                                    className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono"
-                                    placeholder="Explain how the input is structured"
-                                ></textarea>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Expected Output Format</label>
-                                <textarea
-                                    name="expectedOutput"
-                                    value={formData.expectedOutput}
-                                    onChange={handleChange}
-                                    rows={3}
-                                    className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono"
-                                    placeholder="Explain how the output should be structured"
-                                ></textarea>
-                            </div>
-                        </div>
-
-                        <hr className="my-2" />
-
-                        <div>
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-medium text-gray-800">Test Cases</h3>
-                                <button
-                                    type="button"
-                                    onClick={addTestCase}
-                                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-md transition"
-                                >
-                                    + Add Test Case
-                                </button>
-                            </div>
-
-                            <div className="flex flex-col gap-4">
-                                {testCases.map((tc, idx) => (
-                                    <div key={idx} className="p-4 border rounded-md bg-gray-50 relative">
-                                        <div className="absolute top-2 right-2 text-xs font-bold text-gray-400">
-                                            #{idx + 1}
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-xs font-medium text-gray-600 mb-1">Standard Input</label>
-                                                <textarea
-                                                    value={tc.stdin}
-                                                    onChange={(e) => handleTestCaseChange(idx, 'stdin', e.target.value)}
-                                                    rows={2}
-                                                    className="w-full border rounded px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 font-mono"
-                                                ></textarea>
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-medium text-gray-600 mb-1">Expected Output</label>
-                                                <textarea
-                                                    value={tc.expectedOutput}
-                                                    onChange={(e) => handleTestCaseChange(idx, 'expectedOutput', e.target.value)}
-                                                    rows={2}
-                                                    className="w-full border rounded px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 font-mono"
-                                                ></textarea>
-                                            </div>
-                                        </div>
-                                        {testCases.length > 1 && (
-                                            <div className="mt-2 text-right">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeTestCase(idx)}
-                                                    className="text-xs text-red-500 hover:text-red-700"
-                                                >
-                                                    Remove
-                                                </button>
-                                            </div>
-                                        )}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                    <div className="form-group">
+                                        <label className="form-label">📝 Title</label>
+                                        <input
+                                            type="text"
+                                            name="title"
+                                            value={formData.title}
+                                            onChange={handleChange}
+                                            required
+                                            className="form-input"
+                                            placeholder="e.g. Two Sum"
+                                        />
                                     </div>
-                                ))}
-                            </div>
-                        </div>
 
-                        <div className="flex justify-end mt-4 pt-4 border-t">
-                            <button
-                                type="button"
-                                onClick={() => navigate('/')}
-                                className="px-4 py-2 border rounded-md text-sm text-gray-600 hover:bg-gray-50 mr-3"
-                                disabled={loading}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className={`px-6 py-2 rounded-md text-sm font-medium text-white ${loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
-                            >
-                                {loading ? 'Creating...' : 'Create Problem'}
-                            </button>
+                                    <div className="form-group">
+                                        <label className="form-label">📊 Difficulty</label>
+                                        <select
+                                            name="difficulty"
+                                            value={formData.difficulty}
+                                            onChange={handleChange}
+                                            className="select-input"
+                                        >
+                                            <option value="EASY">Easy</option>
+                                            <option value="MEDIUM">Medium</option>
+                                            <option value="HARD">Hard</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="form-label">🏷️ Tags (comma separated)</label>
+                                    <input
+                                        type="text"
+                                        name="tags"
+                                        value={formData.tags}
+                                        onChange={handleChange}
+                                        className="form-input"
+                                        placeholder="e.g. array, hash-table, math"
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="form-label">📄 Description</label>
+                                    <textarea
+                                        name="description"
+                                        value={formData.description}
+                                        onChange={handleChange}
+                                        required
+                                        rows={5}
+                                        className="form-input"
+                                        style={{ minHeight: '120px', resize: 'vertical' }}
+                                        placeholder="Describe the problem in detail..."
+                                    ></textarea>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                    <div className="form-group">
+                                        <label className="form-label">📥 Input Format (StdIn)</label>
+                                        <textarea
+                                            name="stdIn"
+                                            value={formData.stdIn}
+                                            onChange={handleChange}
+                                            rows={3}
+                                            className="form-input"
+                                            style={{ fontFamily: 'monospace' }}
+                                            placeholder="Explain how the input is structured"
+                                        ></textarea>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">📤 Expected Output Format</label>
+                                        <textarea
+                                            name="expectedOutput"
+                                            value={formData.expectedOutput}
+                                            onChange={handleChange}
+                                            rows={3}
+                                            className="form-input"
+                                            style={{ fontFamily: 'monospace' }}
+                                            placeholder="Explain how the output should be structured"
+                                        ></textarea>
+                                    </div>
+                                </div>
+
+                                <div className="divider-line"></div>
+
+                                <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                        <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#fff', margin: 0 }}>
+                                            🧪 Test Cases
+                                        </h3>
+                                        <button
+                                            type="button"
+                                            onClick={addTestCase}
+                                            className="cf-btn"
+                                        >
+                                            ➕ Add Test Case
+                                        </button>
+                                    </div>
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                        {testCases.map((tc, idx) => (
+                                            <div key={idx} style={{ 
+                                                padding: '15px', 
+                                                border: '1px solid var(--cf-border)', 
+                                                borderRadius: '8px', 
+                                                background: 'var(--cf-bg-tertiary)',
+                                                position: 'relative'
+                                            }}>
+                                                <div style={{ 
+                                                    position: 'absolute', 
+                                                    top: '10px', 
+                                                    right: '15px', 
+                                                    fontSize: '12px', 
+                                                    fontWeight: 'bold', 
+                                                    color: '#666' 
+                                                }}>
+                                                    #{idx + 1}
+                                                </div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                                        <label className="form-label" style={{ fontSize: '12px' }}>Standard Input</label>
+                                                        <textarea
+                                                            value={tc.stdin}
+                                                            onChange={(e) => handleTestCaseChange(idx, 'stdin', e.target.value)}
+                                                            rows={2}
+                                                            className="form-input"
+                                                            style={{ fontFamily: 'monospace', fontSize: '13px' }}
+                                                        ></textarea>
+                                                    </div>
+                                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                                        <label className="form-label" style={{ fontSize: '12px' }}>Expected Output</label>
+                                                        <textarea
+                                                            value={tc.expectedOutput}
+                                                            onChange={(e) => handleTestCaseChange(idx, 'expectedOutput', e.target.value)}
+                                                            rows={2}
+                                                            className="form-input"
+                                                            style={{ fontFamily: 'monospace', fontSize: '13px' }}
+                                                        ></textarea>
+                                                    </div>
+                                                </div>
+                                                {testCases.length > 1 && (
+                                                    <div style={{ marginTop: '10px', textAlign: 'right' }}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeTestCase(idx)}
+                                                            style={{ 
+                                                                background: 'transparent', 
+                                                                border: 'none', 
+                                                                color: '#ff6666', 
+                                                                cursor: 'pointer',
+                                                                fontSize: '13px'
+                                                            }}
+                                                        >
+                                                            🗑️ Remove
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--cf-border)' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/')}
+                                        className="cf-btn"
+                                        disabled={loading}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="cf-btn-primary"
+                                        style={{ padding: '10px 25px' }}
+                                    >
+                                        {loading ? (
+                                            <span>
+                                                <span className="loading-dots"><span></span><span></span><span></span></span> Creating...
+                                            </span>
+                                        ) : 'Create Problem'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
