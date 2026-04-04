@@ -4,3 +4,5 @@
 node_backend/node_modules
 node_backend/minikube-linux-amd64
 node_backend/kubectl
+
+.env.example
