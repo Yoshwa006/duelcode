@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/Navbar.jsx";
-import { getQuestions, enterToken } from "../service/api.js";
+import { getQuestions, enterToken, getMyActiveSession } from "../service/api.js";
 
 function Home() {
   const navigate = useNavigate();
@@ -9,6 +9,7 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [token, setToken] = useState("");
+  const [activeSession, setActiveSession] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -16,6 +17,9 @@ function Home() {
         setLoading(true);
         const data = await getQuestions();
         setQuestions(data);
+        
+        const session = await getMyActiveSession();
+        setActiveSession(session);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -44,7 +48,19 @@ function Home() {
   };
 
   const handleProblemClick = (problemId) => {
-    navigate(`/${problemId}`);
+    if (activeSession) {
+      navigate(`/match/${activeSession.token}`);
+    } else {
+      navigate(`/${problemId}`);
+    }
+  };
+
+  const handleStartBattle = (problemId) => {
+    if (activeSession) {
+      navigate(`/match/${activeSession.token}`);
+    } else {
+      navigate(`/match/create/${problemId}`);
+    }
   };
 
   const getDifficultyClass = (difficulty) => {
@@ -85,7 +101,12 @@ function Home() {
       <div style={{ marginTop: '20px' }}>
         <div style={{ marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Problemset</div>
-          <button onClick={() => navigate('/create-problem')} className="cf-btn">Create Problem</button>
+          <button 
+            onClick={() => activeSession ? navigate(`/match/${activeSession.token}`) : navigate('/create-problem')} 
+            className="cf-btn"
+          >
+            {activeSession ? 'Return to Battle' : 'Create Problem'}
+          </button>
         </div>
 
         <table className="cf-table">

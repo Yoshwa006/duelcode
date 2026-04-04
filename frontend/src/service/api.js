@@ -163,6 +163,26 @@ export async function getLeaderboard() {
     }
 }
 
+export async function getMyActiveSession() {
+    try {
+        const res = await api.get('/api/my-session');
+        return res.data;
+    } catch (error) {
+        console.error('Failed to fetch active session', error);
+        return null;
+    }
+}
+
+export async function surrender(token) {
+    try {
+        const res = await api.post(`/api/surrender?token=${token}`);
+        return res.data;
+    } catch (error) {
+        console.error('Failed to surrender', error);
+        throw error;
+    }
+}
+
 export async function joinRandom() {
     try {
         const res = await api.get('/api/join-random');

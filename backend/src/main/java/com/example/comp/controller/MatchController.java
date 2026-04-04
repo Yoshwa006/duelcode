@@ -86,8 +86,9 @@ public class MatchController {
         return new ResponseEntity<>(res, mapStatus(res.getErrorCode()));
     }
 
-    @GetMapping("/join-key")
-    public ResponseEntity<OperationStatusResponse> joinWithKey(@RequestParam String key) {
+    @PostMapping("/join-key")
+    public ResponseEntity<OperationStatusResponse> joinWithKey(@RequestBody java.util.Map<String, String> request) {
+        String key = request.get("key");
         OperationStatusResponse res = judgeService.enterToken(key);
         return new ResponseEntity<>(res, mapStatus(res.getErrorCode()));
     }
@@ -106,6 +107,25 @@ public class MatchController {
     @PostMapping("/search")
     public List<SessionResponseDTO> searchSessions(@RequestBody SessionSearchRequestDTO requestDTO) {
         return sessionService.searchSessions(requestDTO);
+    }
+
+    @GetMapping("/my-session")
+    public ResponseEntity<?> getMyActiveSession() {
+        Session session = sessionService.getMyActiveSession();
+        if (session == null) {
+            return ResponseEntity.ok().body(null);
+        }
+        return ResponseEntity.ok().body(java.util.Map.of(
+            "token", session.getToken(),
+            "status", session.getStatus(),
+            "questionTitle", session.getQuestion() != null ? session.getQuestion().getTitle() : null
+        ));
+    }
+
+    @PostMapping("/surrender")
+    public ResponseEntity<OperationStatusResponse> surrender(@RequestParam String token) {
+        OperationStatusResponse res = judgeService.surrender(token);
+        return new ResponseEntity<>(res, mapStatus(res.getErrorCode()));
     }
 
 }

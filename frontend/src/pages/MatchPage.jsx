@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
 import Editor from "@monaco-editor/react";
-import { getSessionByToken, submitCode } from "../service/api.js";
+import { getSessionByToken, submitCode, generateKey, surrender } from "../service/api.js";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
@@ -24,7 +24,7 @@ function getUserFromToken() {
 }
 
 function MatchPage() {
-    const { token } = useParams();
+    const { token, questionId } = useParams();
     const navigate = useNavigate();
 
     const [sessionData, setSessionData] = useState(null);
@@ -44,48 +44,66 @@ function MatchPage() {
     useEffect(() => {
         const initMatch = async () => {
             try {
-                const data = await getSessionByToken(token);
-                setSessionData(data);
-
-                if (data.question?.stdIn) {
-                    setCode(`// Solve: ${data.question.title}\n\n`);
-                }
-
-                const socket = new SockJS(`${WS_URL}/ws?userId=${encodeURIComponent(userEmail)}`);
-                const client = new Client({
-                    webSocketFactory: () => socket,
-                    onConnect: () => {
-                        console.log("Connected to match WebSocket");
-                        client.subscribe(`/topic/match/${token}`, (msg) => {
-                            const parsed = JSON.parse(msg.body);
-                            setMessages(prev => [...prev, parsed]);
-                        });
-                    },
-                    onStompError: (frame) => {
-                        console.error('Broker error', frame.headers['message']);
+                if (questionId) {
+                    const res = await generateKey(questionId);
+                    if (res && typeof res === 'string') {
+                        navigate(`/match/${res}`, { replace: true });
+                        return;
+                    } else {
+                        setError(res?.message || 'Failed to create session');
+                        setLoading(false);
+                        return;
                     }
-                });
+                }
+                
+                if (token) {
+                    const data = await getSessionByToken(token);
+                    setSessionData(data);
 
-                client.activate();
-                setStompClient(client);
+                    if (data.question?.stdIn) {
+                        setCode(`// Solve: ${data.question.title}\n\n`);
+                    }
 
+                    const socket = new SockJS(`${WS_URL}/ws?userId=${encodeURIComponent(userEmail)}`);
+                    const client = new Client({
+                        webSocketFactory: () => socket,
+                        onConnect: () => {
+                            console.log("Connected to match WebSocket");
+                            client.subscribe(`/topic/match/${token}`, (msg) => {
+                                const parsed = JSON.parse(msg.body);
+                                setMessages(prev => [...prev, parsed]);
+                            });
+                            client.subscribe(`/topic/match/${token}/output`, (msg) => {
+                                setOutput(msg.body);
+                            });
+                            client.subscribe(`/topic/match/${token}/result`, (msg) => {
+                                const result = JSON.parse(msg.body);
+                                if (result.winner) {
+                                    alert(`🏆 ${result.winner} won the battle!`);
+                                }
+                            });
+                        },
+                        onDisconnect: () => {
+                            console.log("Disconnected from match WebSocket");
+                        }
+                    });
+                    client.activate();
+                    setStompClient(client);
+                }
             } catch (err) {
-                setError(err.message || "Failed to load match session.");
+                setError(err.message || 'Failed to load session');
             } finally {
                 setLoading(false);
             }
         };
-
-        if (token) {
-            initMatch();
-        }
+        initMatch();
 
         return () => {
             if (stompClient) {
                 stompClient.deactivate();
             }
         };
-    }, [token, userEmail]);
+    }, [token, questionId, navigate, userEmail]);
 
     const handleCodeChange = (value) => {
         setCode(value || "");
@@ -132,18 +150,35 @@ function MatchPage() {
         setChatInput("");
     };
 
+    const handleSurrender = async () => {
+        if (!confirm("Are you sure you want to surrender? Your opponent will win.")) {
+            return;
+        }
+        try {
+            const res = await surrender(token);
+            if (res.status === "SUCCESS") {
+                alert("You surrendered. The match is over.");
+                window.location.href = "/";
+            }
+        } catch (err) {
+            alert("Failed to surrender: " + (err.message || "Unknown error"));
+        }
+    };
+
     if (loading) return (
-        <div className="flex justify-center items-center h-screen bg-gray-50">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="container">
+            <Navbar />
+            <div className="loading-spinner">Loading battle...</div>
         </div>
     );
 
     if (error) return (
-        <div className="container mx-auto mt-10 max-w-lg">
-            <div className="bg-red-50 text-red-700 p-6 rounded-lg border border-red-200">
-                <h3 className="font-bold text-lg mb-2">Error</h3>
-                <p>{error}</p>
-                <button onClick={() => navigate("/")} className="mt-4 cf-btn">Back to Home</button>
+        <div className="container">
+            <Navbar />
+            <div className="alert alert-error">
+                {error}
+                <br /><br />
+                <button onClick={() => navigate("/")} className="cf-btn">Back to Home</button>
             </div>
         </div>
     );
@@ -151,85 +186,91 @@ function MatchPage() {
     const question = sessionData?.question;
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="container">
             <Navbar />
 
-            <div className="flex flex-1 p-4 gap-4 overflow-hidden" style={{ height: "calc(100vh - 64px)" }}>
-                <div className="w-1/3 flex flex-col gap-4 overflow-y-auto">
-                    <div className="bg-white rounded shadow-sm border border-gray-200 p-6">
-                        <h2 className="text-xl font-bold text-blue-800 mb-2">{question?.title || "Loading..."}</h2>
-                        <div className="text-sm text-gray-500 mb-4 pb-4 border-b">
-                            Difficulty: <span className="font-semibold text-gray-700">{question?.difficulty}</span>
-                        </div>
-
-                        <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap mb-6">
-                            {question?.description}
-                        </div>
-
-                        {question?.stdIn && (
-                            <div className="mb-4">
-                                <h3 className="font-bold text-sm text-gray-900 mb-2 uppercase tracking-wide">Input Format</h3>
-                                <pre className="bg-gray-50 p-3 rounded border border-gray-200 text-sm font-mono text-gray-800 overflow-x-auto">
-                                    {question.stdIn}
-                                </pre>
+            <div style={{ display: 'flex', height: 'calc(100vh - 100px)', padding: '10px', gap: '10px' }}>
+                <div style={{ width: '35%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div className="panel" style={{ flex: '0 0 auto' }}>
+                        <div className="panel-title">{question?.title || "Loading..."}</div>
+                        <div className="panel-content">
+                            <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
+                                Difficulty: <span style={{ fontWeight: 'bold' }}>{question?.difficulty}</span>
                             </div>
-                        )}
-
-                        {question?.expectedOutput && (
-                            <div>
-                                <h3 className="font-bold text-sm text-gray-900 mb-2 uppercase tracking-wide">Expected Output</h3>
-                                <pre className="bg-gray-50 p-3 rounded border border-gray-200 text-sm font-mono text-gray-800 overflow-x-auto">
-                                    {question.expectedOutput}
-                                </pre>
+                            <div style={{ whiteSpace: 'pre-wrap', fontSize: '13px' }}>
+                                {question?.description}
                             </div>
-                        )}
+                            {question?.stdIn && (
+                                <div style={{ marginTop: '10px' }}>
+                                    <div style={{ fontWeight: 'bold', fontSize: '12px' }}>Input Format:</div>
+                                    <pre className="code-block">{question.stdIn}</pre>
+                                </div>
+                            )}
+                            {question?.expectedOutput && (
+                                <div style={{ marginTop: '10px' }}>
+                                    <div style={{ fontWeight: 'bold', fontSize: '12px' }}>Expected Output:</div>
+                                    <pre className="code-block">{question.expectedOutput}</pre>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="bg-white rounded shadow-sm border border-gray-200 flex flex-col flex-1 min-h-[300px]">
-                        <div className="px-4 py-2 border-b bg-gray-50 font-semibold text-gray-700 text-sm flex justify-between">
-                            <span>Match Chat</span>
-                            <span className="text-xs text-gray-400">Token: {token}</span>
+                    <div className="panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '200px' }}>
+                        <div className="panel-title">
+                            Match Chat
+                            <span style={{ float: 'right', fontSize: '11px', fontWeight: 'normal' }}>Token: {token}</span>
                         </div>
-
-                        <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-2 bg-gray-50/50">
+                        <div style={{ flex: 1, padding: '10px', overflowY: 'auto' }}>
                             {messages.map((m, idx) => (
-                                <div key={idx} className={`flex flex-col ${m.sender === userEmail ? "items-end" : "items-start"}`}>
-                                    <span className="text-xs text-gray-500 mb-1">{m.sender}</span>
-                                    <div className={`px-3 py-2 rounded-lg text-sm max-w-[85%] ${m.sender === userEmail ? "bg-blue-600 text-white" : "bg-white border text-gray-800 shadow-sm"}`}>
+                                <div key={idx} style={{ marginBottom: '8px' }}>
+                                    <div style={{ fontSize: '11px', color: '#888' }}>{m.sender}</div>
+                                    <div style={{ 
+                                        display: 'inline-block',
+                                        padding: '5px 10px',
+                                        borderRadius: '5px',
+                                        backgroundColor: m.sender === userEmail ? '#0000BB' : '#eee',
+                                        color: m.sender === userEmail ? '#fff' : '#000',
+                                        fontSize: '13px'
+                                    }}>
                                         {m.content}
                                     </div>
                                 </div>
                             ))}
                         </div>
-
-                        <form onSubmit={sendChat} className="border-t p-3 flex gap-2">
+                        <form onSubmit={sendChat} style={{ padding: '10px', borderTop: '1px solid #ddd', display: 'flex', gap: '5px' }}>
                             <input
                                 type="text"
                                 value={chatInput}
                                 onChange={e => setChatInput(e.target.value)}
                                 placeholder="Type a message..."
-                                className="flex-1 border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                style={{ flex: 1 }}
                             />
-                            <button type="submit" className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-700 transition">
-                                Send
-                            </button>
+                            <button type="submit" className="cf-btn">Send</button>
                         </form>
                     </div>
                 </div>
 
-                <div className="w-2/3 flex flex-col gap-4">
-                    <div className="bg-white rounded shadow-sm border border-gray-200 flex-1 flex flex-col overflow-hidden">
-                        <div className="px-4 py-2 border-b bg-gray-50 flex justify-between items-center">
-                            <span className="font-semibold text-gray-700 text-sm">Java 17 Editor</span>
-                            <button
+                <div style={{ width: '65%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div className="panel" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <div className="panel-title">
+                            Java 17 Editor
+                            <button 
                                 onClick={handleRunCode}
                                 disabled={submitting}
-                                className={`px-4 py-1.5 rounded text-sm font-medium transition ${submitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#1890ff] hover:bg-[#40a9ff] text-white"}`}
+                                style={{ float: 'right', backgroundColor: '#28a745', color: '#fff' }}
+                                className="cf-btn"
                             >
                                 {submitting ? "Running..." : "Submit Code"}
                             </button>
+                            <button 
+                                onClick={handleSurrender}
+                                style={{ float: 'right', marginLeft: '5px', backgroundColor: '#dc3545', color: '#fff' }}
+                                className="cf-btn"
+                            >
+                                Surrender
+                            </button>
                         </div>
-                        <div className="flex-1 pt-2">
+                        <div style={{ flex: 1 }}>
                             <Editor
                                 height="100%"
                                 language="java"
@@ -246,12 +287,9 @@ function MatchPage() {
                         </div>
                     </div>
 
-                    <div className="h-48 bg-[#1e1e1e] rounded shadow flex flex-col overflow-hidden border border-gray-800">
-                        <div className="px-4 py-1 text-xs font-mono text-gray-400 bg-[#2d2d2d] border-b border-black flex justify-between">
-                            <span>Console Output</span>
-                            {output && <button onClick={() => setOutput("")} className="hover:text-white">Clear</button>}
-                        </div>
-                        <pre className="flex-1 p-4 font-mono text-sm overflow-y-auto text-[#d4d4d4] whitespace-pre-wrap">
+                    <div style={{ height: '150px', backgroundColor: '#1e1e1e', borderRadius: '3px', padding: '10px' }}>
+                        <div style={{ color: '#888', fontSize: '12px', marginBottom: '5px' }}>Console Output</div>
+                        <pre style={{ color: '#d4d4d4', fontSize: '12px', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
                             {output || "Ready. Write and submit your code."}
                         </pre>
                     </div>

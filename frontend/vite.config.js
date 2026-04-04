@@ -6,7 +6,18 @@ export default defineConfig({
   plugins: [react()
     , tailwindcss()],
   define: {
-    // This provides the 'global' variable expected by some legacy libraries
     global: 'window',
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/ws': {
+        target: 'http://localhost:8080',
+        ws: true,
+      },
+    },
   },
 })

@@ -2,6 +2,7 @@ package com.example.comp.service;
 
 import com.example.comp.component.CurrentUser;
 import com.example.comp.dto.OperationStatusResponse;
+import com.example.comp.dto.chat.ChatMessage;
 import com.example.comp.enums.BattleType;
 import com.example.comp.enums.Status;
 import com.example.comp.model.Question;
@@ -23,8 +24,8 @@ import java.util.UUID;
 public class JudgeService {
 
     private static final String TOKEN_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final int TOKEN_LENGTH = 4;
-    private static final int MAX_ATTEMPTS = 32;
+    private static final int TOKEN_LENGTH = 6;
+    private static final int MAX_ATTEMPTS = 100;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final SessionRepo sessionRepo;
@@ -47,8 +48,8 @@ public class JudgeService {
      * @return unique session token
      */
     private String generateUniqueToken() {
-        char[] tokenChars = new char[TOKEN_LENGTH];
-        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        for (int attempt = 0; attempt < 100; attempt++) {
+            char[] tokenChars = new char[TOKEN_LENGTH];
             for (int i = 0; i < TOKEN_LENGTH; i++) {
                 tokenChars[i] = TOKEN_CHARS.charAt(SECURE_RANDOM.nextInt(TOKEN_CHARS.length()));
             }
@@ -57,10 +58,7 @@ public class JudgeService {
                 return token;
             }
         }
-        // Fallback in the very rare case of exhaustion
-        String fallbackToken = Long.toString(Math.abs(SECURE_RANDOM.nextLong()), 36).toUpperCase();
-        log.warn("Exhausted {} attempts to generate unique token, using fallback [{}]", MAX_ATTEMPTS, fallbackToken);
-        return fallbackToken;
+        throw new RuntimeException("Failed to generate unique token after 100 attempts");
     }
 
     /**
@@ -68,7 +66,7 @@ public class JudgeService {
      * 
      * @param quesId the question UUID
      * @return generated session token
-     */
+      */
     @Transactional
     public String generateKey(UUID quesId) {
         if (quesId == null) {
@@ -81,6 +79,12 @@ public class JudgeService {
         Users user = currentUser.get();
         if (user == null) {
             throw new SecurityException("User not authenticated");
+        }
+
+        // Check if user already has an active session
+        Session existingSession = sessionRepo.findSessionsForUser(user.getId());
+        if (existingSession != null) {
+            throw new IllegalStateException("You are already in an active battle. Please complete or wait for it to finish.");
         }
 
         String token = generateUniqueToken();
@@ -196,6 +200,59 @@ public class JudgeService {
         res.setErrorCode(0);
         log.info("User [{}] joined session successfully with token [{}]",
                 (currentUser.get() != null ? currentUser.get().getId() : null), token);
+        return res;
+    }
+
+    @Transactional
+    public OperationStatusResponse surrender(String token) {
+        OperationStatusResponse res = new OperationStatusResponse();
+        
+        if (token == null || token.trim().isEmpty()) {
+            res.setStatus("FAILED");
+            res.setMessage("Token is required");
+            res.setErrorCode(400);
+            return res;
+        }
+
+        Session session = sessionRepo.findByToken(token.trim());
+        if (session == null) {
+            res.setStatus("FAILED");
+            res.setMessage("Session not found");
+            res.setErrorCode(404);
+            return res;
+        }
+
+        Users currentUser = this.currentUser.get();
+        if (currentUser == null) {
+            res.setStatus("FAILED");
+            res.setMessage("Not authenticated");
+            res.setErrorCode(401);
+            return res;
+        }
+
+        Users opponent = null;
+        int userId = currentUser.getId();
+        if (session.getCreatedBy() != null && session.getCreatedBy().getId() == userId) {
+            opponent = session.getJoinedBy();
+        } else if (session.getJoinedBy() != null && session.getJoinedBy().getId() == userId) {
+            opponent = session.getCreatedBy();
+        }
+
+        if (opponent != null) {
+            session.setWho_won(opponent);
+            session.setStatus(Status.STATUS_COMPLETED);
+            sessionRepo.save(session);
+            
+            ChatMessage sysMsg = new ChatMessage();
+            sysMsg.setType("SYSTEM");
+            sysMsg.setContent("User " + currentUser.getUsername() + " surrendered! " + opponent.getUsername() + " wins!");
+            sysMsg.setSenderId(currentUser.getId());
+            chatMessagingService.sendMatchMessage(token, sysMsg);
+        }
+
+        res.setStatus("SUCCESS");
+        res.setMessage("You surrendered. The match is over.");
+        res.setErrorCode(0);
         return res;
     }
 }

@@ -12,11 +12,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '1mb' }));
 
-const JUDGE_API_KEY = process.env.JUDGE_API_KEY;
-if (!JUDGE_API_KEY) {
-  console.error('ERROR: JUDGE_API_KEY environment variable is required');
-  process.exit(1);
-}
+const JUDGE_API_KEY = '93f1e2c382mshae6d1f9ec604c67p14e8c3jsn7a4ef97c4287';
 
 const headers = {
   'Content-Type': 'application/json',

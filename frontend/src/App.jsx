@@ -13,6 +13,7 @@ function App() {
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/create-problem" element={<CreateProblem />} />
             <Route path="/match/:token" element={<MatchPage />} />
+            <Route path="/match/create/:questionId" element={<MatchPage />} />
             <Route path="/:id/edit" element={<TextEditor />} />
             <Route path="/:id" element={<SingleProblem />} />
         </Routes>

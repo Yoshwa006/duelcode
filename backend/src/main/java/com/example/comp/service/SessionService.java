@@ -1,9 +1,11 @@
 package com.example.comp.service;
 
+import com.example.comp.component.CurrentUser;
 import com.example.comp.dto.SessionResponseDTO;
 import com.example.comp.dto.SessionSearchRequestDTO;
 import com.example.comp.model.Session;
 import com.example.comp.repo.CustomSessionRepository;
+import com.example.comp.repo.SessionRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +15,22 @@ import java.util.List;
 public class SessionService {
     @Autowired
     private CustomSessionRepository service;
+    @Autowired
+    private SessionRepo sessionRepo;
+    @Autowired
+    private CurrentUser currentUser;
 
     public List<SessionResponseDTO> searchSessions(SessionSearchRequestDTO requestDTO){
         return service.searchSessions(requestDTO)
                 .stream()
                 .map(this::toDTO)
                 .toList();
+    }
+
+    public Session getMyActiveSession() {
+        var user = currentUser.get();
+        if (user == null) return null;
+        return sessionRepo.findSessionsForUser(user.getId());
     }
 
     private SessionResponseDTO toDTO(Session s) {

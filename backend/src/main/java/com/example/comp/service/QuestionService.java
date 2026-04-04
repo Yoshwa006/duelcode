@@ -11,11 +11,8 @@ import com.example.comp.repo.QuestionRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,10 +27,8 @@ public class QuestionService {
 
     private final QuestionRepo questionRepo;
     private final CommentRepository commentRepository;
-    private final RedisTemplate<String, Object> redis;
     private final CurrentUser currentUser;
 
-    @Cacheable(value = "questions::all")
     public List<QuestionDTO> getAllQuestions() {
         log.info("Fetching all questions from DB");
         return questionRepo.findAll()
@@ -47,27 +42,15 @@ public class QuestionService {
     }
 
     public Question getQuestionById(UUID id) {
-        String cacheKey = "question::" + id;
-
-        Question cached = (Question) redis.opsForValue().get(cacheKey);
-        if (cached != null) {
-            return cached;
-        }
-
-        Question question = questionRepo.findById(id)
+        return questionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Question not found: " + id));
-
-        redis.opsForValue().set(cacheKey, question);
-        return question;
     }
 
-    @CacheEvict(value = "questions::all", allEntries = true)
     public QuestionDTO createQuestion(QuestionDTO dto) {
         Question saved = questionRepo.save(toEntity(dto));
         return toDTO(saved);
     }
 
-    @CacheEvict(value = "questions::all", allEntries = true)
     public QuestionDTO updateQuestion(UUID id, QuestionDTO dto) {
 
         Question question = getQuestionById(id);
@@ -84,19 +67,14 @@ public class QuestionService {
 
         Question updated = questionRepo.save(question);
 
-        redis.delete("question::" + id);
-
         return toDTO(updated);
     }
 
-    @CacheEvict(value = "questions::all", allEntries = true)
     public void deleteQuestion(UUID id) {
         questionRepo.deleteById(id);
-        redis.delete("question::" + id);
     }
 
     @Transactional
-    @CacheEvict(value = "questions::all", allEntries = true)
     public List<QuestionDTO> bulkCreate(List<QuestionDTO> dtos) {
 
         List<Question> questions = dtos.stream()
@@ -110,7 +88,6 @@ public class QuestionService {
     }
 
     @Transactional
-    @CacheEvict(value = "questions::all", allEntries = true)
     public List<QuestionDTO> bulkUpdate(List<QuestionDTO> dtos) {
 
         return dtos.stream()
@@ -119,10 +96,8 @@ public class QuestionService {
     }
 
     @Transactional
-    @CacheEvict(value = "questions::all", allEntries = true)
     public void bulkDelete(List<UUID> ids) {
         questionRepo.deleteAllById(ids);
-        ids.forEach(id -> redis.delete("question::" + id));
     }
 
     @Transactional
@@ -140,7 +115,6 @@ public class QuestionService {
             Comment parent = commentRepository.findById(request.parentId())
                     .orElseThrow(() -> new RuntimeException("Parent comment not found"));
 
-            // prevent cross-question reply attack
             if (!parent.getQuestion().getId().equals(questionId)) {
                 throw new RuntimeException("Parent comment does not belong to this question");
             }
@@ -186,10 +160,6 @@ public class QuestionService {
 
         commentRepository.delete(comment);
     }
-
-    // =====================================================
-    // MAPPERS
-    // =====================================================
 
     private QuestionDTO toDTO(Question question) {
 

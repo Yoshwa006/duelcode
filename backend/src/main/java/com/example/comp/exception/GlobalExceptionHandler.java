@@ -48,6 +48,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<OperationStatusResponse> handleIllegalStateException(IllegalStateException ex) {
+        OperationStatusResponse response = new OperationStatusResponse();
+        response.setStatus("FAILED");
+        response.setMessage(ex.getMessage());
+        response.setErrorCode(400);
+        
+        log.warn("Illegal state: {}", ex.getMessage());
+        return ResponseEntity.badRequest().body(response);
+    }
+
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<OperationStatusResponse> handleSecurityException(SecurityException ex) {
         OperationStatusResponse response = new OperationStatusResponse();
