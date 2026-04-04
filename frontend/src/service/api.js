@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -70,11 +70,11 @@ export async function generateKey(questionId) {
 
 export async function enterToken(token) {
     try {
-        const response = await api.get(`/api/join-key?key=${token}`);
+        const response = await api.post('/api/join-key', { key: token });
         const res = response.data;
 
         if (res.status === 'SUCCESS' || res.errorCode === 0) {
-            localStorage.setItem('sessionToken', token);
+            sessionStorage.setItem('sessionToken', token);
             return res;
         } else {
             throw new Error(res.message || 'Failed to join session');
@@ -131,7 +131,7 @@ export async function register({ email, password }) {
         const res = await api.post('/api/auth/register', { email, password });
         return res.data;
     } catch (error) {
-        console.error('Failed to register:', error.response?.data || error.message);
+        console.error('Failed to register:', error.message);
         throw error;
     }
 }
@@ -148,7 +148,7 @@ export async function login({ email, password }) {
         localStorage.setItem('jwt', token);
         return token;
     } catch (error) {
-        console.error('Failed to login:', error.response?.data || error.message);
+        console.error('Failed to login:', error.message);
         throw error;
     }
 }

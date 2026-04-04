@@ -48,6 +48,9 @@ public class LeaderboardService {
     }
 
     public Users getOpponent(Session session, Users current) {
+        if (session.getCreatedBy() == null || session.getJoinedBy() == null) {
+            return null;
+        }
         return session.getCreatedBy().getId() == current.getId()
                 ? session.getJoinedBy()
                 : session.getCreatedBy();

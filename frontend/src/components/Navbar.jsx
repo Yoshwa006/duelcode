@@ -6,51 +6,52 @@ function Navbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.getItem('jwt');
-        setIsLoggedIn(!!token);
+        const checkAuth = () => {
+            const token = localStorage.getItem('jwt');
+            setIsLoggedIn(!!token);
+        };
+        checkAuth();
+        window.addEventListener('storage', checkAuth);
+        return () => window.removeEventListener('storage', checkAuth);
     }, []);
 
     const handleLogout = () => {
         localStorage.removeItem('jwt');
-        localStorage.removeItem('sessionToken');
+        sessionStorage.removeItem('sessionToken');
         setIsLoggedIn(false);
         navigate('/');
     };
 
     return (
-        <div style={{ backgroundColor: '#fff', padding: '10px 15px', borderBottom: '1px solid #b9b9b9', marginBottom: '15px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                    <Link to="/" style={{ fontWeight: 'bold', fontSize: '18px', color: '#111' }}>
-                        DuelCode
-                    </Link>
-                    <div style={{ display: 'flex', gap: '15px' }}>
-                        <Link to="/">Problems</Link>
-                        <Link to="/">Leaderboard</Link>
-                        {isLoggedIn && <Link to="/create-problem" style={{ fontWeight: '500', color: '#0055BB' }}>Create Problem</Link>}
-                    </div>
-                </div>
+        <div className="cf-nav">
+            <div className="cf-nav-brand">
+                <Link to="/">DuelCode</Link>
+            </div>
+            
+            <div className="cf-nav-links">
+                <Link to="/" className="cf-nav-link">Problems</Link>
+                <Link to="/" className="cf-nav-link">Leaderboard</Link>
+                {isLoggedIn && (
+                    <Link to="/create-problem" className="cf-nav-link">Create Problem</Link>
+                )}
+            </div>
 
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    {isLoggedIn ? (
-                        <>
-                            <span style={{ color: '#555' }}>Logged in</span>
-                            <span>|</span>
-                            <span
-                                onClick={handleLogout}
-                                style={{ color: '#0055BB', cursor: 'pointer' }}
-                            >
-                                Logout
-                            </span>
-                        </>
-                    ) : (
-                        <>
-                            <Link to="/auth">Sign In</Link>
-                            <span>|</span>
-                            <Link to="/auth">Register</Link>
-                        </>
-                    )}
-                </div>
+            <div className="cf-nav-user">
+                {isLoggedIn ? (
+                    <>
+                        <span>Logged in</span>
+                        <span className="cf-divider">|</span>
+                        <span onClick={handleLogout} style={{ color: '#0000BB', cursor: 'pointer' }}>
+                            Logout
+                        </span>
+                    </>
+                ) : (
+                    <>
+                        <Link to="/auth" className="cf-nav-link">Sign In</Link>
+                        <span className="cf-divider">|</span>
+                        <Link to="/auth" className="cf-nav-link">Register</Link>
+                    </>
+                )}
             </div>
         </div>
     );

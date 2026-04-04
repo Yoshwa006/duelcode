@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { login, register } from "../service/api";
+import { useNavigate } from "react-router-dom";
 
 export default function AuthPage() {
+  const navigate = useNavigate();
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,6 +18,12 @@ export default function AuthPage() {
 
     try {
       if (mode === "register") {
+        if (password.length < 6) {
+          setMsg("Password must be at least 6 characters");
+          setStatus("error");
+          setLoading(false);
+          return;
+        }
         await register({ email, password });
         setMsg("Registered! Now sign in.");
         setStatus("success");
@@ -24,17 +32,17 @@ export default function AuthPage() {
         const token = await login({ email, password });
         setMsg("Login successful!");
         setStatus("success");
+        setTimeout(() => navigate('/'), 500);
       }
       setEmail("");
       setPassword("");
     } catch (err) {
-      setMsg(err.response?.data || err.message || "Something went wrong.");
+      setMsg(err.response?.data?.message || err.message || "Something went wrong.");
       setStatus("error");
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="container" style={{ marginTop: '20px' }}>
@@ -70,7 +78,7 @@ export default function AuthPage() {
                 minLength={mode === "register" ? 6 : undefined}
                 disabled={loading}
               />
-                {mode === "register" && (
+              {mode === "register" && (
                 <div style={{ fontSize: '12px', color: '#666', marginTop: '3px' }}>
                   Password must be at least 6 characters
                 </div>
@@ -98,7 +106,7 @@ export default function AuthPage() {
                 setMsg("");
                 setStatus(null);
               }}
-              style={{ color: '#0055BB', cursor: 'pointer', textDecoration: 'underline' }}
+              style={{ color: '#0000BB', cursor: 'pointer', textDecoration: 'underline' }}
             >
               {mode === "login"
                 ? "Need an account? Register"
@@ -108,15 +116,7 @@ export default function AuthPage() {
 
           {msg && (
             <div
-              style={{
-                marginTop: '15px',
-                padding: '8px',
-                border: status === 'success' ? '1px solid #10b981' : '1px solid #ef4444',
-                backgroundColor: status === 'success' ? '#ecfdf5' : '#fef2f2',
-                color: status === 'success' ? '#065f46' : '#991b1b',
-                fontSize: '13px',
-                textAlign: 'center'
-              }}
+              className={`alert ${status === 'success' ? 'alert-success' : 'alert-error'}`}
             >
               {msg}
             </div>

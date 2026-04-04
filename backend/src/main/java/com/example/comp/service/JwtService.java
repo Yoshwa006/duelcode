@@ -13,15 +13,32 @@ import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 
+import jakarta.annotation.PostConstruct;
+
 
     @Service
     public class JwtService {
 
-        @Value("${jwt.secret:1c5b7c2b8f8f4d48a1b7e5c2a6f8d1e0c8c12e3f0b6a9d4f5b2c8d3e4f6a1b2}")
+        @Value("${jwt.secret}")
         private String secretKey;
 
         @Value("${jwt.expiration:86400000}")
         private long jwtExpiration;
+
+        @PostConstruct
+        public void validateSecretKey() {
+            if (secretKey == null || secretKey.isBlank()) {
+                throw new IllegalStateException("JWT secret must be configured via jwt.secret property");
+            }
+            try {
+                byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+                if (keyBytes.length < 32) {
+                    throw new IllegalStateException("JWT secret must be at least 256 bits (32 bytes) when Base64-decoded");
+                }
+            } catch (IllegalArgumentException e) {
+                throw new IllegalStateException("JWT secret must be a valid Base64-encoded string");
+            }
+        }
 
         private Key getSignInKey() {
             byte[] keyBytes = Decoders.BASE64.decode(secretKey);

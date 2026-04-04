@@ -87,40 +87,39 @@ public class SubmitService {
             res.setMessage("No test cases found for question");
             return res;
         }
-        TestCases testCase = tc.get(0);
 
-        submission.setStdin(testCase.getStdin());
-        submission.setExpected_output(testCase.getExpected_output());
-        JudgeResponse result = runJudge(submission);
+        for (TestCases testCase : tc) {
+            submission.setStdin(testCase.getStdin());
+            submission.setExpected_output(testCase.getExpected_output());
+            JudgeResponse result = runJudge(submission);
 
-        if (result == null) {
-            res.setStatus("failure");
-            res.setMessage("Judge API failed");
-            return res;
+            if (result == null) {
+                res.setStatus("failure");
+                res.setMessage("Judge API failed");
+                return res;
+            }
+
+            if (!"Accepted".equalsIgnoreCase(result.getStatus())) {
+                res.setStatus("failure");
+                res.setMessage("Wrong answer on test case");
+                return res;
+            }
         }
 
-        if ("Accepted".equalsIgnoreCase(result.getStatus())) {
-            session.setWho_won(user);
-            session.setStatus(Status.STATUS_COMPLETED);
-            sessionRepo.save(session);
+        session.setWho_won(user);
+        session.setStatus(Status.STATUS_COMPLETED);
+        sessionRepo.save(session);
 
-            // publish for leaderboard things
-            battleEventPublisher.publishBattleFinished(session.getId());
+        battleEventPublisher.publishBattleFinished(session.getId());
 
-            // Notify over websocket
-            ChatMessage sysMsg = new ChatMessage();
-            sysMsg.setType("SYSTEM");
-            sysMsg.setContent("User " + user.getUsername() + " solved the problem and won the match!");
-            sysMsg.setSenderId(user.getId());
-            chatMessagingService.sendMatchMessage(session.getToken(), sysMsg);
+        ChatMessage sysMsg = new ChatMessage();
+        sysMsg.setType("SYSTEM");
+        sysMsg.setContent("User " + user.getUsername() + " solved the problem and won the match!");
+        sysMsg.setSenderId(user.getId());
+        chatMessagingService.sendMatchMessage(session.getToken(), sysMsg);
 
-            res.setStatus("success");
-            res.setMessage("Correct answer. You won the battle");
-            return res;
-        }
-
-        res.setStatus("failure");
-        res.setMessage("Wrong answer");
+        res.setStatus("success");
+        res.setMessage("Correct answer. You won the battle");
         return res;
     }
 

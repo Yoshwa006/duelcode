@@ -1,45 +1,115 @@
-services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-    ports:
-      - "9200:9200"
+version: '3.9'
 
+services:
+  # ============================================
+  # Infrastructure Services
+  # ============================================
+  
   mysql:
-    image: mysql:8
+    image: mysql:8.0
+    container_name: duelcode-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: test
-      MYSQL_DATABASE: comp
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-comp}
+      MYSQL_USER: ${MYSQL_USER:-compuser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-comppass}
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - duelcode-network
 
   redis:
-    image: redis:7
+    image: redis:7-alpine
+    container_name: duelcode-redis
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - duelcode-network
 
-  springboot-app:
-    image: comp:latest
+  # ============================================
+  # Application Services
+  # ============================================
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: duelcode-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-comp}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-compuser}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-comppass}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      JUDGE_API_URL: http://node-backend:3001
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
     depends_on:
       mysql:
         condition: service_healthy
-      elasticsearch:
-        condition: service_started
       redis:
         condition: service_started
+    networks:
+      - duelcode-network
+    restart: unless-stopped
+
+  node-backend:
+    build:
+      context: ./node_backend
+      dockerfile: Dockerfile
+    container_name: duelcode-judge-service
     environment:
-      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/comp?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: test
-      SPRING_REDIS_HOST: redis
-      SPRING_REDIS_PORT: 6379
+      JUDGE_API_KEY: ${JUDGE_API_KEY}
+      JUDGE0_URL: ${JUDGE0_URL:-https://judge0-ce.p.rapidapi.com}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      NODE_ENV: production
     ports:
-      - "8080:8080"
+      - "${NODE_BACKEND_PORT:-3001}:3001"
+    networks:
+      - duelcode-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: duelcode-frontend
+    environment:
+      VITE_API_URL: http://backend:8080
+      VITE_WS_URL: ws://backend:8080
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      - backend
+    networks:
+      - duelcode-network
+    restart: unless-stopped
+
+networks:
+  duelcode-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:

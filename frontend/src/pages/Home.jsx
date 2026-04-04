@@ -25,12 +25,6 @@ function Home() {
     fetchData();
   }, []);
 
-  const clearVariables = () => {
-    const jwt = localStorage.getItem("jwt");
-    localStorage.clear();
-    if (jwt) localStorage.setItem("jwt", jwt);
-  };
-
   const handleSubmitKey = async () => {
     if (!token.trim()) {
       setError("Please enter the key !");
@@ -38,9 +32,9 @@ function Home() {
     }
 
     try {
-      const res = await enterToken({ token });
+      const res = await enterToken(token.trim());
       if (res.status === "SUCCESS" || res.errorCode === 0) {
-        navigate(`/match/${token}`);
+        navigate(`/match/${token.trim()}`);
       } else {
         setError(res.message || "Invalid key or session already full.");
       }
@@ -53,13 +47,20 @@ function Home() {
     navigate(`/${problemId}`);
   };
 
+  const getDifficultyClass = (difficulty) => {
+    switch(difficulty?.toUpperCase()) {
+      case 'HARD': return 'difficulty-hard';
+      case 'MEDIUM': return 'difficulty-medium';
+      case 'EASY': return 'difficulty-easy';
+      default: return '';
+    }
+  };
+
   if (loading) {
     return (
       <div className="container">
         <NavBar />
-        <div style={{ padding: '20px', textAlign: 'center' }}>
-          Loading problems...
-        </div>
+        <div className="loading-spinner">Loading problems...</div>
       </div>
     );
   }
@@ -68,7 +69,7 @@ function Home() {
     return (
       <div className="container">
         <NavBar />
-        <div style={{ padding: '20px', color: 'red', textAlign: 'center' }}>
+        <div className="alert alert-error">
           Error loading problems: {error}
           <br /><br />
           <button onClick={() => window.location.reload()} className="cf-btn">Retry</button>
@@ -84,7 +85,7 @@ function Home() {
       <div style={{ marginTop: '20px' }}>
         <div style={{ marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Problemset</div>
-          <button onClick={clearVariables} className="cf-btn">Clear Variables</button>
+          <button onClick={() => navigate('/create-problem')} className="cf-btn">Create Problem</button>
         </div>
 
         <table className="cf-table">
@@ -101,7 +102,7 @@ function Home() {
                 <td style={{ textAlign: 'center' }}>{index + 1}</td>
                 <td>
                   <span
-                    style={{ color: '#0055BB', cursor: 'pointer', fontWeight: 'bold' }}
+                    className="problem-link"
                     onClick={() => handleProblemClick(problem.id)}
                   >
                     {problem.title}
@@ -111,10 +112,7 @@ function Home() {
                   </div>
                 </td>
                 <td style={{ textAlign: 'center' }}>
-                  <span style={{
-                    color: problem.difficulty === 'Hard' ? 'red' :
-                      problem.difficulty === 'Medium' ? 'orange' : 'green'
-                  }}>
+                  <span className={getDifficultyClass(problem.difficulty)}>
                     {problem.difficulty}
                   </span>
                 </td>
