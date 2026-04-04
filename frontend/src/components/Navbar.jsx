@@ -97,8 +97,8 @@ function Navbar() {
                 
                 <div className="cf-nav-links">
                     <Link to="/" className="cf-nav-link">Problems</Link>
-                    <Link to="/" className="cf-nav-link">Contests</Link>
-                    <Link to="/" className="cf-nav-link">Leaderboard</Link>
+                    <Link to="/users" className="cf-nav-link">Users</Link>
+                    <Link to="/friends" className="cf-nav-link">Friends</Link>
                     {isLoggedIn && (
                         <Link to="/create-problem" className="cf-nav-link">Create Problem</Link>
                     )}

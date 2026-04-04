@@ -3,6 +3,7 @@ package com.example.comp.service;
 import com.example.comp.dto.FriendRequestActionRequest;
 import com.example.comp.dto.FriendRequestCreateRequest;
 import com.example.comp.dto.FriendRequestResponse;
+import com.example.comp.dto.UserProfileDTO;
 import com.example.comp.dto.UserSummaryDTO;
 import com.example.comp.enums.FriendRequestStatus;
 import com.example.comp.model.FriendRequest;
@@ -61,6 +62,11 @@ public class FriendService {
         return requests.stream().map(this::toResponse).toList();
     }
 
+    public List<FriendRequestResponse> getSentRequests(int userId) {
+        List<FriendRequest> requests = friendRequestRepo.findBySenderIdAndStatus(userId, FriendRequestStatus.PENDING);
+        return requests.stream().map(this::toResponse).toList();
+    }
+
     public FriendRequestResponse acceptRequest(Long requestId, FriendRequestActionRequest request) {
         FriendRequest friendRequest = friendRequestRepo.findById(requestId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found."));
@@ -95,6 +101,72 @@ public class FriendService {
                     return new UserSummaryDTO(friend.getId(), friend.getEmail());
                 })
                 .toList();
+    }
+
+    public List<UserProfileDTO> getFriendsWithProfile(int userId) {
+        List<FriendRequest> accepted = friendRequestRepo.findByStatusForUser(userId, FriendRequestStatus.ACCEPTED);
+        return accepted.stream()
+                .map(friendRequest -> {
+                    Users friend = friendRequest.getSender().getId() == userId
+                            ? friendRequest.getReceiver()
+                            : friendRequest.getSender();
+                    return mapToProfileDTO(friend);
+                })
+                .toList();
+    }
+
+    public void removeFriend(int userId, int friendId) {
+        List<FriendRequest> accepted = friendRequestRepo.findByStatusForUser(userId, FriendRequestStatus.ACCEPTED);
+        for (FriendRequest fr : accepted) {
+            boolean isParticipant = (fr.getSender().getId() == userId && fr.getReceiver().getId() == friendId) ||
+                    (fr.getSender().getId() == friendId && fr.getReceiver().getId() == userId);
+            if (isParticipant) {
+                friendRequestRepo.delete(fr);
+                return;
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Friend not found.");
+    }
+
+    public boolean areFriends(int userId1, int userId2) {
+        List<FriendRequest> accepted = friendRequestRepo.findByStatusForUser(userId1, FriendRequestStatus.ACCEPTED);
+        for (FriendRequest fr : accepted) {
+            if ((fr.getSender().getId() == userId1 && fr.getReceiver().getId() == userId2) ||
+                    (fr.getSender().getId() == userId2 && fr.getReceiver().getId() == userId1)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasPendingRequest(int fromUserId, int toUserId) {
+        List<FriendRequest> requests = friendRequestRepo.findBetweenUsers(fromUserId, toUserId);
+        for (FriendRequest fr : requests) {
+            if (fr.getStatus() == FriendRequestStatus.PENDING) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int getFriendCount(int userId) {
+        List<FriendRequest> accepted = friendRequestRepo.findByStatusForUser(userId, FriendRequestStatus.ACCEPTED);
+        return accepted.size();
+    }
+
+    private UserProfileDTO mapToProfileDTO(Users user) {
+        UserProfileDTO dto = new UserProfileDTO();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setUsername(user.getUsername());
+        dto.setCountry(user.getCountry());
+        dto.setCity(user.getCity());
+        dto.setOrganization(user.getOrganization());
+        dto.setRating(user.getRating());
+        dto.setMaxRating(user.getMaxRating());
+        dto.setRank(user.getRank());
+        dto.setMaxRank(user.getMaxRank());
+        return dto;
     }
 
     private FriendRequestResponse toResponse(FriendRequest request) {

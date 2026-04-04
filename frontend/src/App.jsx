@@ -6,6 +6,9 @@ import AuthPage from "./pages/Auth.jsx";
 import MatchPage from "./pages/MatchPage.jsx";
 import CreateProblem from "./pages/CreateProblem.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
+import UsersListPage from "./pages/UsersListPage.jsx";
+import FriendsPage from "./pages/FriendsPage.jsx";
+import UserProfilePage from "./pages/UserProfilePage.jsx";
 
 function App() {
     return (
@@ -13,6 +16,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/users" element={<UsersListPage />} />
+            <Route path="/users/:userId" element={<UserProfilePage />} />
+            <Route path="/friends" element={<FriendsPage />} />
             <Route path="/create-problem" element={<CreateProblem />} />
             <Route path="/match/:token" element={<MatchPage />} />
             <Route path="/match/create/:questionId" element={<MatchPage />} />

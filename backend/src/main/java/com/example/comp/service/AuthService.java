@@ -4,6 +4,8 @@ import com.example.comp.model.PasswordResetToken;
 import com.example.comp.dto.auth.AuthRequest;
 import com.example.comp.dto.auth.AuthResponse;
 import com.example.comp.mapper.Mapper;
+import com.example.comp.model.UserProfile;
+import com.example.comp.model.UserStats;
 import com.example.comp.model.Users;
 import com.example.comp.repo.PasswordTokenResetRepo;
 import com.example.comp.repo.UserRepo;
@@ -11,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -41,14 +44,22 @@ public class AuthService {
         return userRepo.findByEmail(email) != null;
     }
 
+    @Transactional
     public void register(AuthRequest authDTO) {
         if (isEmailExists(authDTO.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
         Users savingUser = Mapper.DTOtoUser(authDTO);
-        // Hash password before saving
         savingUser.setPassword(passwordEncoder.encode(authDTO.getPassword()));
+        
+        String username = authDTO.getEmail().split("@")[0];
+        savingUser.setUsername(username);
+        savingUser.setRegistrationTime(System.currentTimeMillis());
+        savingUser.setLastOnlineTime(System.currentTimeMillis());
+        
         userRepo.save(savingUser);
+        
+        log.info("User registered successfully: {}", savingUser.getEmail());
     }
 
     public AuthResponse login(AuthRequest request) {
@@ -58,15 +69,17 @@ public class AuthService {
         if (user == null) {
             response.setValid(false);
             response.setToken(null);
-            return response; // email not found
+            return response; 
         }
 
-        // Use password encoder to compare hashed password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             response.setValid(false);
             response.setToken(null);
-            return response; // wrong password
+            return response; 
         }
+
+        user.setLastOnlineTime(System.currentTimeMillis());
+        userRepo.save(user);
 
         String token = jwtService.generateToken(user.getEmail());
         response.setValid(true);

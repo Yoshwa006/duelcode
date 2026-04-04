@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -20,11 +21,48 @@ public class Users implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @Column(unique = true)
     private String email;
     private String password;
     private String username;
 
     private String role = "ROLE_USER";
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private UserProfile profile;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private UserStats stats;
+
+    private String country;
+    private String city;
+    private String organization;
+
+    private String avatarUrl;
+
+    private String website;
+    private String twitter;
+    private String github;
+    private String linkedin;
+
+    private Integer rating = 1200;
+    private Integer maxRating = 1200;
+    private String rank = "Newbie";
+    private String maxRank = "Newbie";
+
+    private Integer contribution = 0;
+    private Integer friendCount = 0;
+
+    private Long registrationTime;
+    private Long lastOnlineTime;
+
+    private Integer problemCount = 0;
+    private Integer contestCount = 0;
+    private Integer solvedCount = 0;
+    private Integer submissionCount = 0;
+
+    @Column(columnDefinition = "TEXT")
+    private String bio;
 
     public int getId() {
         return id;
