@@ -5,12 +5,14 @@ import SingleProblem from "./pages/SingleProblem.jsx";
 import AuthPage from "./pages/Auth.jsx";
 import MatchPage from "./pages/MatchPage.jsx";
 import CreateProblem from "./pages/CreateProblem.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
 
 function App() {
     return (
         <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/create-problem" element={<CreateProblem />} />
             <Route path="/match/:token" element={<MatchPage />} />
             <Route path="/match/create/:questionId" element={<MatchPage />} />

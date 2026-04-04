@@ -213,4 +213,34 @@ export async function searchSessions(request) {
     }
 }
 
+export async function getCurrentUserProfile() {
+    try {
+        const res = await api.get('/api/users/me');
+        return res.data;
+    } catch (error) {
+        console.error('Failed to fetch current user profile', error);
+        throw error;
+    }
+}
+
+export async function getUserProfile(userId) {
+    try {
+        const res = await api.get(`/api/users/${userId}`);
+        return res.data;
+    } catch (error) {
+        console.error('Failed to fetch user profile', error);
+        throw error;
+    }
+}
+
+export async function updateUserProfile(profileData) {
+    try {
+        const res = await api.put('/api/users/me', profileData);
+        return res.data;
+    } catch (error) {
+        console.error('Failed to update user profile', error);
+        throw error;
+    }
+}
+
 export default api;
