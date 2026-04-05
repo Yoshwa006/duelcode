@@ -1,6 +1,7 @@
 package com.example.comp.config;
 
 import com.example.comp.service.CustomUserService;
+import com.example.comp.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +31,9 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private JwtService jwtService;
+
     @Value("${app.cors.allowed-origins:http://localhost:5173}")
     private List<String> allowedOrigins;
 
@@ -51,7 +55,28 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/login/oauth2/**").permitAll()
+                        .requestMatchers("/oauth2/**").permitAll()
+                        .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler((request, response, authentication) -> {
+                            org.springframework.security.oauth2.core.user.OAuth2User principal = 
+                                (org.springframework.security.oauth2.core.user.OAuth2User) authentication.getPrincipal();
+                            
+                            String email = principal.getAttribute("email");
+                            if (email == null) {
+                                email = principal.getAttribute("sub") + "@google.com";
+                            }
+                            
+                            String token = jwtService.generateToken(email);
+                            
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"token\":\"" + token + "\",\"email\":\"" + email + "\"}");
+                        })
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

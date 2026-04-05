@@ -6,3 +6,8 @@ node_backend/minikube-linux-amd64
 node_backend/kubectl
 
 .env.example
+.env
+*.env.local
+
+# Backend
+backend/target/
