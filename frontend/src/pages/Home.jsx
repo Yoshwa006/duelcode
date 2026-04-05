@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/Navbar.jsx";
-import { getQuestions, enterToken, getMyActiveSession } from "../service/api.js";
+import { questionsApi, matchApi } from "../service/api";
 
 function Home() {
   const navigate = useNavigate();
@@ -15,10 +15,10 @@ function Home() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await getQuestions();
+        const data = await questionsApi.getAll();
         setQuestions(data);
         
-        const session = await getMyActiveSession();
+        const session = await matchApi.getMyActive();
         setActiveSession(session);
       } catch (err) {
         setError(err.message);
@@ -36,7 +36,7 @@ function Home() {
     }
 
     try {
-      const res = await enterToken(token.trim());
+      const res = await matchApi.enterToken(token.trim());
       if (res.status === "SUCCESS" || res.errorCode === 0) {
         navigate(`/match/${token.trim()}`);
       } else {

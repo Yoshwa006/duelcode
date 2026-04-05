@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { getUserProfile, sendFriendRequest, getCurrentUserProfile } from '../service/api';
+import { usersApi, friendsApi } from '../service/api';
 
 function UserProfilePage() {
     const { userId } = useParams();
@@ -15,8 +15,8 @@ function UserProfilePage() {
         const fetchData = async () => {
             try {
                 const [userData, currentData] = await Promise.all([
-                    getUserProfile(parseInt(userId)),
-                    getCurrentUserProfile()
+                    usersApi.getById(parseInt(userId)),
+                    usersApi.getCurrent()
                 ]);
                 setUser(userData);
                 setCurrentUser(currentData);
@@ -31,9 +31,9 @@ function UserProfilePage() {
 
     const handleSendFriendRequest = async () => {
         try {
-            await sendFriendRequest(parseInt(userId));
+            await friendsApi.sendRequest(parseInt(userId));
             setMessage({ type: 'success', text: 'Friend request sent!' });
-            const updatedUser = await getUserProfile(parseInt(userId));
+            const updatedUser = await usersApi.getById(parseInt(userId));
             setUser(updatedUser);
         } catch (err) {
             setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to send request' });

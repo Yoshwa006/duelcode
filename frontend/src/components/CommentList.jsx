@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getComments, createComment } from '../service/api';
+import { questionsApi } from '../service/api';
 import CommentItem from './CommentItem';
 import CommentForm from './CommentForm';
 
@@ -10,7 +10,7 @@ const CommentList = ({ questionId }) => {
 
     const fetchComments = async () => {
         try {
-            const data = await getComments(questionId, page, size);
+            const data = await questionsApi.getComments(questionId, page, size);
             setComments(data.content || []);
         } catch (err) {
             console.error('Failed to load comments', err);
@@ -23,7 +23,7 @@ const CommentList = ({ questionId }) => {
 
     const handleAddComment = async (content, parentId = null) => {
         try {
-            await createComment(questionId, { content, parentId });
+            await questionsApi.createComment(questionId, { content, parentId });
             fetchComments();
         } catch (err) {
             console.error('Failed to add comment', err);

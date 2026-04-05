@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
 import Editor from "@monaco-editor/react";
-import { getSessionByToken, submitCode, generateKey, surrender, cancelSession } from "../service/api.js";
+import { matchApi } from "../service/api";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
@@ -60,7 +60,7 @@ function MatchPage() {
         const initMatch = async () => {
             try {
                 if (questionId) {
-                    const res = await generateKey(questionId);
+                    const res = await matchApi.generateKey(questionId);
                     if (res && typeof res === 'string') {
                         navigate(`/match/${res}`, { replace: true });
                         return;
@@ -72,7 +72,7 @@ function MatchPage() {
                 }
                 
                 if (token) {
-                    const data = await getSessionByToken(token);
+                    const data = await matchApi.getByToken(token);
                     setSessionData(data);
 
                     if (data.question?.stdIn) {
@@ -157,7 +157,7 @@ function MatchPage() {
                 source_code: code,
             };
 
-            const res = await submitCode(payload);
+            const res = await matchApi.submit(payload);
 
             if (res.status === "success") {
                 setOutput(`${res.message}\n\n🎉 You won the battle!`);
@@ -193,7 +193,7 @@ function MatchPage() {
             return;
         }
         try {
-            const res = await surrender(token);
+            const res = await matchApi.surrender(token);
             if (res.status === "SUCCESS") {
                 alert("You surrendered. The match is over.");
                 window.location.href = "/";
@@ -208,7 +208,7 @@ function MatchPage() {
             return;
         }
         try {
-            const res = await cancelSession(token);
+            const res = await matchApi.cancel(token);
             if (res.status === "SUCCESS") {
                 alert("Session cancelled.");
                 window.location.href = "/";

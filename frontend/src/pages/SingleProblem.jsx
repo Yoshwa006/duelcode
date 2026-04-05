@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { generateKey, getSingleQuestion } from "../service/api.js";
+import { questionsApi, matchApi } from "../service/api";
 import Navbar from "../components/Navbar.jsx";
 import CommentList from "../components/CommentList.jsx";
 
@@ -19,7 +19,7 @@ function SingleProblem() {
         const fetchProblem = async () => {
             try {
                 setLoading(true);
-                const problemData = await getSingleQuestion(id);
+                const problemData = await questionsApi.getById(id);
                 setProblem(problemData);
             } catch (err) {
                 setError(err.message || 'Something went wrong.');
@@ -37,7 +37,7 @@ function SingleProblem() {
         try {
             setWaiting(true);
 
-            const generated_key = await generateKey(id);
+            const generated_key = await matchApi.generateKey(id);
             
             const token = typeof generated_key === 'string' ? generated_key : generated_key.token || JSON.stringify(generated_key);
             

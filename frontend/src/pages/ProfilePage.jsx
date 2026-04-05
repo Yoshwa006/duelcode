@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { getCurrentUserProfile, updateUserProfile } from '../service/api';
+import { usersApi } from '../service/api';
 
 function ProfilePage() {
     const navigate = useNavigate();
@@ -26,7 +26,7 @@ function ProfilePage() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const data = await getCurrentUserProfile();
+                const data = await usersApi.getCurrent();
                 setProfile(data);
                 setFormData({
                     username: data.username || '',
@@ -56,7 +56,7 @@ function ProfilePage() {
         setSaving(true);
         setMessage(null);
         try {
-            const updated = await updateUserProfile(formData);
+            const updated = await usersApi.update(formData);
             setProfile(updated);
             setEditing(false);
             setMessage({ type: 'success', text: 'Profile updated successfully!' });

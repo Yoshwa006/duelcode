@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { createQuestion } from '../service/api';
+import { questionsApi } from '../service/api';
 
 function CreateProblem() {
     const navigate = useNavigate();
@@ -54,7 +54,7 @@ function CreateProblem() {
         };
 
         try {
-            await createQuestion(payload);
+            await questionsApi.create(payload);
             navigate('/');
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'Failed to create problem');

@@ -1,7 +1,7 @@
 import Editor from "@monaco-editor/react";
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import { getSingleQuestion, submitCode } from "../service/api";
+import { questionsApi, matchApi } from "../service/api";
 import Navbar from "../components/Navbar";
 
 const LANGUAGES = [
@@ -60,7 +60,7 @@ function TextEditor() {
             try {
                 setLoading(true);
                 setError(null);
-                const problemData = await getSingleQuestion(id);
+                const problemData = await questionsApi.getById(id);
                 setProblem(problemData);
                 setCode(language.template);
             } catch (err) {
@@ -90,7 +90,7 @@ function TextEditor() {
                 source_code: code,
             };
 
-            const response = await submitCode(payload);
+            const response = await matchApi.submit(payload);
             console.log("API Response:", response);
             
             if (response.status === "success") {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { getUsers, searchUsers, sendFriendRequest, getCurrentUserProfile } from '../service/api';
+import { usersApi, friendsApi } from '../service/api';
 
 function UsersListPage() {
     const navigate = useNavigate();
@@ -15,7 +15,7 @@ function UsersListPage() {
     useEffect(() => {
         const fetchCurrentUser = async () => {
             try {
-                const profile = await getCurrentUserProfile();
+                const profile = await usersApi.getCurrent();
                 setCurrentUser(profile);
             } catch (err) {
                 console.error('Failed to fetch current user');
@@ -31,7 +31,7 @@ function UsersListPage() {
     const fetchUsers = async (searchQuery = '') => {
         setLoading(true);
         try {
-            const data = await getUsers(page, 20, searchQuery);
+            const data = await usersApi.getAll({ page, search: searchQuery });
             setUsers(data.content);
             setTotalPages(data.totalPages);
         } catch (err) {
@@ -49,7 +49,7 @@ function UsersListPage() {
 
     const handleSendRequest = async (receiverId) => {
         try {
-            await sendFriendRequest(receiverId);
+            await friendsApi.sendRequest(receiverId);
             alert('Friend request sent!');
             fetchUsers(search);
         } catch (err) {

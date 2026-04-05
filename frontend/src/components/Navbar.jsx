@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { getMyActiveSession, getCurrentUserProfile } from '../service/api.js';
+import { matchApi, usersApi } from '../service/api';
 
 function Navbar() {
     const navigate = useNavigate();
@@ -19,8 +19,8 @@ function Navbar() {
             if (token) {
                 try {
                     const [session, profile] = await Promise.all([
-                        getMyActiveSession(),
-                        getCurrentUserProfile()
+                        matchApi.getMyActive(),
+                        usersApi.getCurrent()
                     ]);
                     setActiveSession(session);
                     setUserProfile(profile);

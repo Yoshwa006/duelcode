@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { login, register } from "../service/api";
+import { authApi } from "../service/api";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
 
@@ -31,12 +31,12 @@ export default function AuthPage() {
           setLoading(false);
           return;
         }
-        await register({ email, password });
+        await authApi.register({ email, password });
         setMsg("Registered! Now sign in.");
         setStatus("success");
         setMode("login");
       } else {
-        const token = await login({ email, password });
+        const token = await authApi.login({ email, password });
         setMsg("Login successful!");
         setStatus("success");
         setTimeout(() => navigate('/'), 500);

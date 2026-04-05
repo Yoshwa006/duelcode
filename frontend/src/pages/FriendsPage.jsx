@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { getFriends, getFriendRequests, getSentRequests, acceptFriendRequest, rejectFriendRequest, removeFriend } from '../service/api';
+import { friendsApi } from '../service/api';
 
 function FriendsPage() {
     const [friends, setFriends] = useState([]);
@@ -17,11 +17,11 @@ function FriendsPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [friendsData, requestsData, sentData] = await Promise.all([
-                getFriends(),
-                getFriendRequests(),
-                getSentRequests()
-            ]);
+                const [friendsData, requestsData, sentData] = await Promise.all([
+                    friendsApi.getAll(),
+                    friendsApi.getRequests(),
+                    friendsApi.getSent()
+                ]);
             setFriends(friendsData);
             setRequests(requestsData);
             setSentRequests(sentData);
@@ -34,7 +34,7 @@ function FriendsPage() {
 
     const handleAccept = async (requestId) => {
         try {
-            await acceptFriendRequest(requestId);
+            await friendsApi.accept(requestId);
             fetchData();
         } catch (err) {
             alert('Failed to accept request');
@@ -43,7 +43,7 @@ function FriendsPage() {
 
     const handleReject = async (requestId) => {
         try {
-            await rejectFriendRequest(requestId);
+            await friendsApi.reject(requestId);
             fetchData();
         } catch (err) {
             alert('Failed to reject request');
@@ -53,7 +53,7 @@ function FriendsPage() {
     const handleRemoveFriend = async (friendId) => {
         if (!confirm('Are you sure you want to remove this friend?')) return;
         try {
-            await removeFriend(friendId);
+            await friendsApi.remove(friendId);
             fetchData();
         } catch (err) {
             alert('Failed to remove friend');
